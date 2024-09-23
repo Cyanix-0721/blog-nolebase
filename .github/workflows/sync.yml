@@ -1,0 +1,43 @@
+name: Sync B to A
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout A repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Checkout B repository
+        uses: actions/checkout@v4
+        with:
+          repository: Cyanix-0721/memo
+          path: B_repo
+          ref: main
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Sync files from B to A
+        run: |
+          rsync -avu --delete B_repo/memo/ ./memo/
+          
+      - name: Remove B_repo directory
+        run: rm -rf B_repo
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "Cyanix-0721"
+          git config user.email "34270450+Cyanix-0721@users.noreply.github.com"
+          git add .
+          git commit -m "Sync files from B repository"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
