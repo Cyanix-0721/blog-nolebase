@@ -144,11 +144,11 @@ const ExtendedTheme: Theme = {
     })
   },
   setup() {
-    Get frontmatter and route
+    // Get frontmatter and route
     const { frontmatter } = toRefs(useData())
     const route = useRoute()
 
-    Obtain configuration from: https://giscus.app/
+    // Obtain configuration from: https://giscus.app/
     giscusTalk({
       repo: 'Cyanix-0721/blog-nolebase',
       repoId: 'R_kgDOMhUn6Q',
