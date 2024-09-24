@@ -7,7 +7,6 @@
 
 网站：
 
-- https://blog-nolebase.vercel.app/
 - https://blog-nolebase.pages.dev/
 
 ## 1 设置
