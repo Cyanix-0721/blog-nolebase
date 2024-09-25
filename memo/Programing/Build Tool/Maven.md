@@ -5,51 +5,68 @@
 ## 1 配置文件 `settings.xml`
 
 ```xml
-<localRepository>D:\Programing Workspace\Repo</localRepository>
-<mirrors>
-<!-- central指向阿里云仓库，查找失败后使用中央仓库 -->
-	<mirror>
-		<id>aliyunmaven</id>
-		<mirrorOf>central</mirrorOf>
-		<name>阿里云公共仓库</name>
-		<url>https://maven.aliyun.com/repository/public</url>
-	</mirror>
-	<mirror>
-		<id>central</id>
-		<mirrorOf>*</mirrorOf>
-		<name>中央仓库</name>
-		<url>https://repo.maven.apache.org/maven2</url>
-	</mirror>
-</mirrors>
-<profiles>
-	<profile>
-	  <id>JDK-1.8</id>
-	  <activation>
-		<!--<activeByDefault>true</activeByDefault>默认激活该profile,且该标签最多一个，和底部标签<activeProfile>profile_id</activeProfile>中填写ID效果一致，可选择一个或同时使用 -->
-		<activeByDefault>false</activeByDefault>
-	  </activation>
-	  <properties>
-		<JdkVersion>1.8</JdkVersion>
-		<maven.compiler.source>${JdkVersion}</maven.compiler.source>
-		<maven.compiler.target>${JdkVersion}</maven.compiler.target>
-	  </properties>
-	</profile>
-	<profile>
-	  <id>JDK-17</id>
-	  <activation>
-		<!--<activeByDefault>true</activeByDefault>默认激活该profile,且该标签最多一个，和底部标签<activeProfile>profile_id</activeProfile>中填写ID效果一致，可选择一个或同时使用 -->
-		<activeByDefault>false</activeByDefault>
-	  </activation>
-	  <properties>
-		<JdkVersion>17</JdkVersion>
-		<maven.compiler.source>${JdkVersion}</maven.compiler.source>
-		<maven.compiler.target>${JdkVersion}</maven.compiler.target>
-	  </properties>
-	</profile>
-</profiles>
-<activeProfiles>
-	<!-- <activeProfile></activeProfile> 中填写激活profile_id -->
-</activeProfiles>
+<settings>
+    <proxies>
+        <proxy>
+            <id>local-proxy</id>
+            <active>true</active>
+            <protocol>http</protocol>
+            <host>127.0.0.1</host>
+            <port>7897</port>
+        </proxy>
+        <proxy>
+            <id>local-https-proxy</id>
+            <active>true</active>
+            <protocol>https</protocol>
+            <host>127.0.0.1</host>
+            <port>7897</port>
+        </proxy>
+    </proxies>
+	<mirrors>
+	<!-- central指向阿里云仓库，查找失败后使用中央仓库 -->
+		<mirror>
+			<id>aliyunmaven</id>
+			<mirrorOf>central</mirrorOf>
+			<name>阿里云公共仓库</name>
+			<url>https://maven.aliyun.com/repository/public</url>
+		</mirror>
+		<mirror>
+			<id>central</id>
+			<mirrorOf>*</mirrorOf>
+			<name>中央仓库</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+		</mirror>
+	</mirrors>
+	<profiles>
+		<profile>
+		  <id>JDK-1.8</id>
+		  <activation>
+			<!--<activeByDefault>true</activeByDefault>默认激活该profile,且该标签最多一个，和底部标签<activeProfile>profile_id</activeProfile>中填写ID效果一致，可选择一个或同时使用 -->
+			<activeByDefault>false</activeByDefault>
+		  </activation>
+		  <properties>
+			<JdkVersion>1.8</JdkVersion>
+			<maven.compiler.source>${JdkVersion}</maven.compiler.source>
+			<maven.compiler.target>${JdkVersion}</maven.compiler.target>
+		  </properties>
+		</profile>
+		<profile>
+		  <id>JDK-17</id>
+		  <activation>
+			<!--<activeByDefault>true</activeByDefault>默认激活该profile,且该标签最多一个，和底部标签<activeProfile>profile_id</activeProfile>中填写ID效果一致，可选择一个或同时使用 -->
+			<activeByDefault>false</activeByDefault>
+		  </activation>
+		  <properties>
+			<JdkVersion>17</JdkVersion>
+			<maven.compiler.source>${JdkVersion}</maven.compiler.source>
+			<maven.compiler.target>${JdkVersion}</maven.compiler.target>
+		  </properties>
+		</profile>
+	</profiles>
+	<activeProfiles>
+		<!-- <activeProfile></activeProfile> 中填写激活profile_id -->
+	</activeProfiles>
+</settings>
 ```
 
 ## 2 可选依赖和排除依赖
@@ -310,3 +327,98 @@ mvn deploy
   <version>1.0.0</version>
 </dependency>
 ```
+
+## 12 代理
+
+在 Maven 中，可以通过编辑 `settings.xml` 文件配置 HTTP 或 HTTPS 代理。该文件通常位于以下位置：
+
+- **Windows**: `%USERPROFILE%\.m2\settings.xml`
+- **Linux/macOS**: `~/.m2/settings.xml`
+
+如果不存在 `settings.xml`，可以手动创建一个。
+
+1. 打开或创建 `settings.xml` 文件。
+2. 在文件中添加 `<proxies>` 配置，用来设置 HTTP 或 HTTPS 代理。
+
+示例 `settings.xml` 文件：
+
+```xml
+<settings>
+    <proxies>
+        <proxy>
+            <id>example-proxy</id>
+            <active>true</active>
+            <protocol>http</protocol>
+            <host>proxy.example.com</host>
+            <port>8080</port>
+            <username>your-username</username>
+            <password>your-password</password>
+            <nonProxyHosts>www.google.com|*.example.com</nonProxyHosts>
+        </proxy>
+        <proxy>
+            <id>example-https-proxy</id>
+            <active>true</active>
+            <protocol>https</protocol>
+            <host>proxy.example.com</host>
+            <port>443</port>
+            <username>your-username</username>
+            <password>your-password</password>
+        </proxy>
+    </proxies>
+</settings>
+```
+
+- `id`: 代理配置的唯一标识符。
+- `active`: 是否激活该代理（`true` 或 `false`）。
+- `protocol`: 使用的协议（`http` 或 `https`）。
+- `host`: 代理服务器的主机名。
+- `port`: 代理服务器的端口号。
+- `username` 和 `password`: 如果代理需要认证，填写用户名和密码。
+- `nonProxyHosts`: 不走代理的主机，可以用 `|` 分隔多个主机名。
+
+## 13 Maven Wrapper
+
+Maven Wrapper (`mvnw`) 可以帮助项目使用指定版本的 Maven，而不需要每个开发者手动安装相同版本的 Maven。它自动下载并管理 Maven 版本，确保团队一致性。
+
+1. **添加 Maven Wrapper 到项目中**
+
+   如果你的项目中还没有 Maven Wrapper，可以通过以下命令来添加：
+
+   ```bash
+   mvn -N io.takari:maven:wrapper
+   ```
+
+   该命令会生成以下文件：
+
+   - `mvnw`: Maven Wrapper 可执行文件 (Linux/macOS)。
+   - `mvnw.cmd`: Maven Wrapper 可执行文件 (Windows)。
+   - `.mvn/wrapper/maven-wrapper.jar`: Maven Wrapper 的核心文件。
+   - `.mvn/wrapper/maven-wrapper.properties`: Maven Wrapper 的配置文件。
+
+2. **自定义 Maven Wrapper 配置**
+
+   打开 `.mvn/wrapper/maven-wrapper.properties` 文件，可以自定义下载的 Maven 版本：
+
+   ```properties
+   distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.9/apache-maven-3.9.9-bin.zip
+   ```
+
+   `distributionUrl` 指定了 Maven 的下载路径和版本。
+
+3. **使用 Maven Wrapper**
+
+   之后，你可以通过以下命令来构建项目，而不需要依赖系统全局的 Maven：
+
+   - 在 **Linux/macOS** 上运行：
+
+	 ```bash
+     ./mvnw clean install
+     ```
+
+   - 在 **Windows** 上运行：
+
+	 ```bash
+     mvnw.cmd clean install
+     ```
+
+Maven Wrapper 会根据 `maven-wrapper.properties` 下载指定版本的 Maven 并进行构建。

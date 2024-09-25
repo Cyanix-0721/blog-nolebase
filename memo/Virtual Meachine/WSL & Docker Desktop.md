@@ -20,24 +20,34 @@
 ### 3.1 如果只使用 WSL 而不使用 Docker Desktop
 
 - 部署的时候就需要物理机先 push 到仓库, 然后 WSL 内部再 pull
-- 需要*手动进行端口转发*或者使用*地址回环*把虚拟机也变成 `localhost`, 容易和物理机产生*端口冲突* (VSCode/IDEA 等主流 IDE 也有端口转发功能)
+- 需要*手动进行端口转发*或者使用*地址回环*把虚拟机也变成 `localhost`, 容易和物理机产生*端口冲突* (VSCode/IDEA 等主流 IDE 也有端口转发功能)![[WSL & Docker Desktop-IMG-20240924095417274.png]]
 - 需要安装 [Portainer](https://www.portainer.io/) 等面板进行管理
+
+> [!warning] 删除已 push 的 commit
+>
+> 对于已经 `push` 的提交，使用 `--hard` 和 `rebase` 修改历史会影响远程仓库的提交记录。具体如下：
+>
+> - **`git reset --hard`**：如果在本地重置到某个提交并推送（使用 `git push --force`），远程仓库的历史将会被覆盖，已推送的提交会从历史中消失。
+>
+> - **`git rebase`**：如果你在本地进行了变基并推送（同样使用 `git push --force`），远程仓库的历史也会被修改，变基后的新提交将替代原有的提交。
+>
+> 无论哪种情况，强制推送（`--force`）都会导致远程历史与本地历史不一致，因此在团队协作中使用时要特别小心，确保不会影响其他开发者的工作。
 
 ### 3.2 使用 WSL + Docker Desktop
 
-- 不需要手动连接 WSL, 通过 IDE 的插件可以使用 GUI 直接对 WSL 中的 docker 进行操作 (也可以通过 SSH 或 TCP 连接, 但是使用体验较差且 TCP 暴露端口有风险)\
+- 不需要手动连接 WSL, 通过 IDE 的插件可以使用 GUI 直接对 WSL 中的 docker 进行操作 (也可以通过 SSH 或 TCP 连接, 但是使用体验较差且 TCP 暴露端口有风险)![[WSL & Docker Desktop-IMG-20240924095102187.png]]
 - 由 Docker Desktop 使用 iptables 自动进行端口转发
-- 大部分 docker 的操作都可以直接通过 Desktop 现成的 GUI 进行操作 (部分功能付费, Portainer 有社区版可以免费使用. 各有优势, 自行取舍)
+- 大部分 docker 的操作都可以直接通过 Desktop 现成的 GUI 进行操作 (部分功能付费, Portainer 有社区版可以免费使用. 各有优势, 自行取舍)![[WSL & Docker Desktop-IMG-20240924094726086.png]]
 
 ## 4 问题处理
 
 ### 4.1 Docker Compose
 
-#### 4.1.1 数据持久化
+#### 4.1.1 Docker Desktop 数据持久化
 
 - 一开始使用挂载目录的方式进行数据持久化 ![WSL & Docker Desktop-IMG-20240920141941980](assets/WSL%20&%20Docker%20Desktop/WSL%20&%20Docker%20Desktop-IMG-20240920141941980.png)  
 - 由于挂载的目录本身不存在, 需要手动进行创建 (Docker Desktop 默认使用 ROOT 账户), 启动时会导致奇怪的权限问题, 又有部分容器不能使用 root 用户使用. 所以放弃使用手动创建目录, `useradd` 用户给目标容器, 再 `chown` 对应权限, 改为直接使用数据卷 ![WSL & Docker Desktop-IMG-20240920142637322](assets/WSL%20&%20Docker%20Desktop/WSL%20&%20Docker%20Desktop-IMG-20240920142637322.png)
-- 通过 `Dockerfile` 把需要的配置文件传入 ![WSL & Docker Desktop-IMG-20240920142746835](assets/WSL%20&%20Docker%20Desktop/WSL%20&%20Docker%20Desktop-IMG-20240920142746835.png)
+- 通过 `Dockerfile` 把需要的配置文件传入
 
 #### 4.1.2 Win 和 Linux 的路径问题
 

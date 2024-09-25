@@ -152,6 +152,8 @@ git branch -d <branch_name>
 git checkout <branch_name>
 ```
 
+- `--orphan`：创建一个没有历史记录的孤立分支。
+
 ### 1.13 Merge 合并分支
 
 ```bash

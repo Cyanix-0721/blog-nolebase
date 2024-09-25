@@ -66,16 +66,26 @@
 
 ```wslconfig
 [wsl2]
-memory=6GB
-processors=6
-networkingMode=mirrored
-dnsTunneling=true
-firewall=true
-autoProxy=true
+memory = 6GB
+processors = 6
+networkingMode = mirrored
+dnsTunneling = true
+firewall = true
+autoProxy = true
 [experimental]
-autoMemoryReclaim=gradual
-sparseVhd=true
+autoMemoryReclaim = gradual
+sparseVhd = true
 ```
+
+- `memory = 6GB`：为 WSL2 分配 6GB 内存的限制。
+- `processors = 6`：为 WSL2 分配 6 个处理器核心。
+- `networkingMode = mirrored`：WSL2 的网络模式设为镜像模式，即 WSL2 直接与宿主机的网络堆栈共享 IP 和网络配置。
+- `dnsTunneling = true`：开启 DNS 隧道模式，允许 WSL2 的 DNS 请求通过隧道传递到宿主机。
+- `firewall = true`：启用 WSL2 的防火墙功能。
+- `autoProxy = true`：启用自动代理，WSL2 自动使用宿主机的代理设置。
+- `[experimental]`：实验性功能的设置部分。
+  - `autoMemoryReclaim = gradual`：开启渐进式自动内存回收，逐步释放不再使用的内存。
+  - `sparseVhd = true`：启用稀疏 VHD 模式，VHD 文件仅使用实际所需的磁盘空间，而不是预分配完整空间。
 
 `etc/wsl.conf`
 
