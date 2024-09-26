@@ -20,11 +20,6 @@ import {
 } from '@nolebase/vitepress-plugin-highlight-targeted-heading/client'
 
 import {
-  InjectionKey as NolebaseGitChangelogInjectionKey,
-  NolebaseGitChangelogPlugin,
-} from '@nolebase/vitepress-plugin-git-changelog/client'
-
-import {
   NolebasePagePropertiesPlugin,
 } from '@nolebase/vitepress-plugin-page-properties/client'
 
@@ -43,7 +38,6 @@ import TocList from './components/TocList.vue'
 import '@nolebase/vitepress-plugin-enhanced-readabilities/client/style.css'
 import '@nolebase/vitepress-plugin-highlight-targeted-heading/client/style.css'
 import '@nolebase/vitepress-plugin-inline-link-preview/client/style.css'
-import '@nolebase/vitepress-plugin-git-changelog/client/style.css'
 import '@nolebase/vitepress-plugin-page-properties/client/style.css'
 import '@nolebase/vitepress-plugin-thumbnail-hash/client/style.css'
 import '@nolebase/vitepress-plugin-enhanced-mark/client/style.css'
@@ -100,12 +94,7 @@ const ExtendedTheme: Theme = {
       },
     })
 
-    app.provide(NolebaseGitChangelogInjectionKey, {
-      mapContributors: creators,
-    })
-
     app.use(NolebaseInlineLinkPreviewPlugin)
-    app.use(NolebaseGitChangelogPlugin)
     app.use(NolebasePagePropertiesPlugin<{
       tags: string[]
       progress: number
