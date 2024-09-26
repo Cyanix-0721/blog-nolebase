@@ -36,6 +36,12 @@
 			<name>中央仓库</name>
 			<url>https://repo.maven.apache.org/maven2</url>
 		</mirror>
+		<mirror>
+			<id>backup-repo</id>
+			<mirrorOf>*, !aliyunmaven, !central</mirrorOf>
+			<name>备用仓库</name>
+			<url>https://repo1.maven.org/maven2</url>
+	    </mirror>
 	</mirrors>
 	<profiles>
 		<profile>
@@ -61,6 +67,46 @@
 			<maven.compiler.source>${JdkVersion}</maven.compiler.source>
 			<maven.compiler.target>${JdkVersion}</maven.compiler.target>
 		  </properties>
+		</profile>
+		<profile>  
+			<id>custom-repos</id>  
+			<activation>  
+				<activeByDefault>true</activeByDefault>  
+			</activation>  
+			<repositories>  
+				<repository>  
+					<id>aliyunmaven</id>  
+					<name>阿里云公共仓库</name>  
+					<url>https://maven.aliyun.com/repository/public</url>  
+				</repository>  
+				<repository>  
+					<id>central</id>  
+					<name>中央仓库</name>  
+					<url>https://repo.maven.apache.org/maven2</url>  
+				</repository>  
+				<repository>  
+					<id>backup-repo</id>  
+					<name>备用仓库</name>  
+					<url>https://repo1.maven.org/maven2</url>  
+				</repository>  
+			</repositories>  
+			<pluginRepositories>  
+				<pluginRepository>  
+					<id>aliyunmaven</id>  
+					<name>阿里云公共仓库</name>  
+					<url>https://maven.aliyun.com/repository/public</url>  
+				</pluginRepository>  
+				<pluginRepository>  
+					<id>central</id>  
+					<name>中央仓库</name>  
+					<url>https://repo.maven.apache.org/maven2</url>  
+				</pluginRepository>  
+				<pluginRepository>  
+					<id>backup-repo</id>  
+					<name>备用仓库</name>  
+					<url>https://repo1.maven.org/maven2</url>  
+				</pluginRepository>  
+			</pluginRepositories>  
 		</profile>
 	</profiles>
 	<activeProfiles>

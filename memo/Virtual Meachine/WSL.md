@@ -201,22 +201,26 @@ wsl -d UbuntuClone
      sudo systemctl restart docker
      ```
 
-### 4.2 关闭 `iptables`
+### 4.2 连接不上 Docker Socket 的解决方法
 
-> [!warning] Docker Desktop 通过 iptables 进行端口转发, 如果使用 Docker Desktop 可以跳过该步骤
+> [!warning]
+> - Docker Desktop 通过 iptables 进行端口转发, 如果使用 Docker Desktop 可以跳过该步骤
+> - 开放 tcp 2375 是危险操作, 有被攻击的隐患, 不建议使用, 如果有连接需求可考虑使用 SSH
 
-如果连接不上 docker socket 可尝试修改 `/etc/docker/daemon.json`
+如果连接不上 docker socket 可尝试修改 `/etc/docker/daemon.json`  
 
-```json
-{
-	"iptables": false
-}
-```
+- 关闭 iptables
 
-或者
+	```json
+	{
+		"iptables": false
+	}
+	```
 
-```json
-{
-  "hosts": ["tcp://0.0.0.0:2375", "unix:///var/run/docker.sock"]
-}
-```
+- 开放 2375 tcp 端口
+
+	```json
+	{
+	  "hosts": ["tcp://0.0.0.0:2375", "unix:///var/run/docker.sock"]
+	}
+	```

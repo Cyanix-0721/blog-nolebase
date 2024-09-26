@@ -23,7 +23,7 @@
 - 需要*手动进行端口转发*或者使用*地址回环*把虚拟机也变成 `localhost`, 容易和物理机产生*端口冲突* (VSCode/IDEA 等主流 IDE 也有端口转发功能)![[WSL & Docker Desktop-IMG-20240924095417274.png]]
 - 需要安装 [Portainer](https://www.portainer.io/) 等面板进行管理
 
-> [!warning] 删除已 push 的 commit
+> [!warning]
 >
 > 对于已经 `push` 的提交，使用 `--hard` 和 `rebase` 修改历史会影响远程仓库的提交记录。具体如下：
 >
@@ -43,14 +43,18 @@
 
 ### 4.1 Docker Compose
 
-#### 4.1.1 Docker Desktop 数据持久化
-
-- 一开始使用挂载目录的方式进行数据持久化 ![WSL & Docker Desktop-IMG-20240920141941980](assets/WSL%20&%20Docker%20Desktop/WSL%20&%20Docker%20Desktop-IMG-20240920141941980.png)  
-- 由于挂载的目录本身不存在, 需要手动进行创建 (Docker Desktop 默认使用 ROOT 账户), 启动时会导致奇怪的权限问题, 又有部分容器不能使用 root 用户使用. 所以放弃使用手动创建目录, `useradd` 用户给目标容器, 再 `chown` 对应权限, 改为直接使用数据卷 ![WSL & Docker Desktop-IMG-20240920142637322](assets/WSL%20&%20Docker%20Desktop/WSL%20&%20Docker%20Desktop-IMG-20240920142637322.png)
-- 通过 `Dockerfile` 把需要的配置文件传入
-
-#### 4.1.2 Win 和 Linux 的路径问题
+#### 4.1.1 Win 和 Linux 的路径问题
 
 - 因为使用 Docker Desktop 是直接把物理机的项目在 WSL 内运行, 挂载的时候可能出现无法读取到目录的问题
 - `Dockerfile` 和 `docker-compose` 文件中的路径都是相对于**构建上下文**（build context）的相对路径
 	- 所以建议 compose 内指定上下文路径的时候使用相对的项目根目录, 同样传输到 `Dockerfile` 中的也是这个相对路径 ![WSL & Docker Desktop-IMG-20240920143517175](assets/WSL%20&%20Docker%20Desktop/WSL%20&%20Docker%20Desktop-IMG-20240920143517175.png)
+	- 如果使用挂载目录的方式进行数据持久化, 使用 `${PWD}` 表示绝对路径, 因为 compose 不支持卷挂载的相对目录, 所以需要使用绝对路径或环境变量 ![[WSL & Docker Desktop-IMG-20240925124515498.png]]
+> [!important]
+>
+> `${PWD}` 是类 Unix 操作系统中的一个环境变量，表示当前工作目录。当在 docker-compose 文件中使用时，它会动态插入执行 docker-compose 命令的目录的绝对路径。 在 Windows 上，`${PWD}` 在命令提示符 (cmd.exe) 中并不是原生可用的。然而，它可以在类似 Unix 的环境中使用，比如 Git Bash、PowerShell 或 Windows Subsystem for Linux (WSL)。例如，在 PowerShell 中，你可以使用 `${PWD}` 来获取当前目录：
+>
+> ```sh
+> $PWD.Path
+> ```
+>
+> 在 Git Bash 或 WSL 中，${PWD} 的工作方式与类 Unix 系统类似。
