@@ -20,7 +20,7 @@
 ### 3.1 如果只使用 WSL 而不使用 Docker Desktop
 
 - 部署的时候就需要物理机先 push 到仓库, 然后 WSL 内部再 pull
-- 需要*手动进行端口转发*或者使用*地址回环*把虚拟机也变成 `localhost`, 容易和物理机产生*端口冲突* (VSCode/IDEA 等主流 IDE 也有端口转发功能)![[WSL & Docker Desktop-IMG-20240924095417274.png]]
+- 需要*手动进行端口转发*或者使用*地址回环*把虚拟机也变成 `localhost`, 容易和物理机产生*端口冲突* (VSCode/IDEA 等主流 IDE 也有端口转发功能)![WSL & Docker Desktop-IMG-20240924095417274](assets/WSL%20&%20Docker%20Desktop/WSL%20&%20Docker%20Desktop-IMG-20240924095417274.png)
 - 需要安装 [Portainer](https://www.portainer.io/) 等面板进行管理
 
 > [!warning]
@@ -35,9 +35,9 @@
 
 ### 3.2 使用 WSL + Docker Desktop
 
-- 不需要手动连接 WSL, 通过 IDE 的插件可以使用 GUI 直接对 WSL 中的 docker 进行操作 (也可以通过 SSH 或 TCP 连接, 但是使用体验较差且 TCP 暴露端口有风险)![[WSL & Docker Desktop-IMG-20240924095102187.png]]
+- 不需要手动连接 WSL, 通过 IDE 的插件可以使用 GUI 直接对 WSL 中的 docker 进行操作 (也可以通过 SSH 或 TCP 连接, 但是使用体验较差且 TCP 暴露端口有风险)![WSL & Docker Desktop-IMG-20240924095102187](assets/WSL%20&%20Docker%20Desktop/WSL%20&%20Docker%20Desktop-IMG-20240924095102187.png)
 - 由 Docker Desktop 使用 iptables 自动进行端口转发
-- 大部分 docker 的操作都可以直接通过 Desktop 现成的 GUI 进行操作 (部分功能付费, Portainer 有社区版可以免费使用. 各有优势, 自行取舍)![[WSL & Docker Desktop-IMG-20240924094726086.png]]
+- 大部分 docker 的操作都可以直接通过 Desktop 现成的 GUI 进行操作 (部分功能付费, Portainer 有社区版可以免费使用. 各有优势, 自行取舍)![WSL & Docker Desktop-IMG-20240924094726086](assets/WSL%20&%20Docker%20Desktop/WSL%20&%20Docker%20Desktop-IMG-20240924094726086.png)
 
 ## 4 问题处理
 
@@ -48,7 +48,7 @@
 - 因为使用 Docker Desktop 是直接把物理机的项目在 WSL 内运行, 挂载的时候可能出现无法读取到目录的问题
 - `Dockerfile` 和 `docker-compose` 文件中的路径都是相对于**构建上下文**（build context）的相对路径
 	- 所以建议 compose 内指定上下文路径的时候使用相对的项目根目录, 同样传输到 `Dockerfile` 中的也是这个相对路径 ![WSL & Docker Desktop-IMG-20240920143517175](assets/WSL%20&%20Docker%20Desktop/WSL%20&%20Docker%20Desktop-IMG-20240920143517175.png)
-	- 如果使用挂载目录的方式进行数据持久化, 使用 `${PWD}` 表示绝对路径, 因为 compose 不支持卷挂载的相对目录, 所以需要使用绝对路径或环境变量 ![[WSL & Docker Desktop-IMG-20240925124515498.png]]
+	- 如果使用挂载目录的方式进行数据持久化, 使用 `${PWD}` 表示绝对路径, 因为 compose 不支持卷挂载的相对目录, 所以需要使用绝对路径或环境变量 ![WSL & Docker Desktop-IMG-20240925124515498](assets/WSL%20&%20Docker%20Desktop/WSL%20&%20Docker%20Desktop-IMG-20240925124515498.png)
 > [!important]
 >
 > `${PWD}` 是类 Unix 操作系统中的一个环境变量，表示当前工作目录。当在 docker-compose 文件中使用时，它会动态插入执行 docker-compose 命令的目录的绝对路径。 在 Windows 上，`${PWD}` 在命令提示符 (cmd.exe) 中并不是原生可用的。然而，它可以在类似 Unix 的环境中使用，比如 Git Bash、PowerShell 或 Windows Subsystem for Linux (WSL)。例如，在 PowerShell 中，你可以使用 `${PWD}` 来获取当前目录：
