@@ -23,7 +23,7 @@ status: 未完成
 
 # Sky-take-out
 
-SSM+SpringBoot+Mybatis-Plus  
+SSM+SpringBoot+Mybatis-Plus+Redis+WebSocket+OSS
 
 记录开发过程中在以往没有使用过的情况
 
