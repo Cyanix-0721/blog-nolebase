@@ -1,3 +1,14 @@
+---
+tags:
+  - SpringCloud
+  - 分页
+  - SpringBoot
+  - Redis
+  - OpenFegin
+  - Logback
+  - MyBatis
+---
+
 # Mall
 
 ## 1 MyBatis Generator (MBG)
@@ -993,437 +1004,270 @@ import java.time.Duration;
 }
 ```
 
-### 3.2 `RedisService.java`
-
-封装 Redis 操作到 Service 层是有意义的，主要有以下几个原因：  
-
-- 抽象化：通过封装 Redis 操作，可以将底层的实现细节隐藏起来，提供一个更高层次的抽象接口。这使得代码更易于理解和维护。  
-- 重用性：将 Redis 操作集中在一个 Service 中，可以在应用的不同部分重用这些操作，避免代码重复。  
-- 简化代码：提供更高层次的方法来执行常见的 Redis 操作，减少样板代码，使业务逻辑更简洁。  
-- 测试性：通过封装，可以更容易地对 Redis 操作进行单元测试。你可以通过 Mock Service 来测试业务逻辑，而不需要依赖实际的 Redis 实例。  
-- 灵活性：如果将来需要更换底层的缓存实现（例如从 Redis 切换到其他缓存系统），只需要修改 Service 的实现，而不需要修改业务代码。  
-
-总之，封装 Redis 操作到 Service 层可以提高代码的可维护性、可重用性和可测试性，是一种良好的实践。
+### 3.2 `RedisUtil.java`
 
 ```java
-package com.mole.mall.common.service;  
+package com.mole.mall.admin.util;  
   
-import java.util.List;  
-import java.util.Map;  
-import java.util.Set;  
-  
-/**  
- * redis操作Service  
- * Created by macro on 2020/3/3. 
- */
- public interface RedisService {  
-  
-    /**  
-     * 保存属性  
-     */  
-    void set(String key, Object value, long time);  
-  
-    /**  
-     * 保存属性  
-     */  
-    void set(String key, Object value);  
-  
-    /**  
-     * 获取属性  
-     */  
-    Object get(String key);  
-  
-    /**  
-     * 删除属性  
-     */  
-    Boolean del(String key);  
-  
-    /**  
-     * 批量删除属性  
-     */  
-    Long del(List<String> keys);  
-  
-    /**  
-     * 设置过期时间  
-     */  
-    Boolean expire(String key, long time);  
-  
-    /**  
-     * 获取过期时间  
-     */  
-    Long getExpire(String key);  
-  
-    /**  
-     * 判断是否有该属性  
-     */  
-    Boolean hasKey(String key);  
-  
-    /**  
-     * 按delta递增  
-     */  
-    Long incr(String key, long delta);  
-  
-    /**  
-     * 按delta递减  
-     */  
-    Long decr(String key, long delta);  
-  
-    /**  
-     * 获取Hash结构中的属性  
-     */  
-    Object hGet(String key, String hashKey);  
-  
-    /**  
-     * 向Hash结构中放入一个属性  
-     */  
-    Boolean hSet(String key, String hashKey, Object value, long time);  
-  
-    /**  
-     * 向Hash结构中放入一个属性  
-     */  
-    void hSet(String key, String hashKey, Object value);  
-  
-    /**  
-     * 直接获取整个Hash结构  
-     */  
-    Map<Object, Object> hGetAll(String key);  
-  
-    /**  
-     * 直接设置整个Hash结构  
-     */  
-    Boolean hSetAll(String key, Map<String, Object> map, long time);  
-  
-    /**  
-     * 直接设置整个Hash结构  
-     */  
-    void hSetAll(String key, Map<String, ?> map);  
-  
-    /**  
-     * 删除Hash结构中的属性  
-     */  
-    void hDel(String key, Object… hashKey);  
-  
-    /**  
-     * 判断Hash结构中是否有该属性  
-     */  
-    Boolean hHasKey(String key, String hashKey);  
-  
-    /**  
-     * Hash结构中属性递增  
-     */  
-    Long hIncr(String key, String hashKey, Long delta);  
-  
-    /**  
-     * Hash结构中属性递减  
-     */  
-    Long hDecr(String key, String hashKey, Long delta);  
-  
-    /**  
-     * 获取Set结构  
-     */  
-    Set<Object> sMembers(String key);  
-  
-    /**  
-     * 向Set结构中添加属性  
-     */  
-    Long sAdd(String key, Object… values);  
-  
-    /**  
-     * 向Set结构中添加属性  
-     */  
-    Long sAdd(String key, long time, Object… values);  
-  
-    /**  
-     * 是否为Set中的属性  
-     */  
-    Boolean sIsMember(String key, Object value);  
-  
-    /**  
-     * 获取Set结构的长度  
-     */  
-    Long sSize(String key);  
-  
-    /**  
-     * 删除Set结构中的属性  
-     */  
-    Long sRemove(String key, Object… values);  
-  
-    /**  
-     * 获取List结构中的属性  
-     */  
-    List<Object> lRange(String key, long start, long end);  
-  
-    /**  
-     * 获取List结构的长度  
-     */  
-    Long lSize(String key);  
-  
-    /**  
-     * 根据索引获取List中的属性  
-     */  
-    Object lIndex(String key, long index);  
-  
-    /**  
-     * 向List结构中添加属性  
-     */  
-    Long lPush(String key, Object value);  
-  
-    /**  
-     * 向List结构中添加属性  
-     */  
-    Long lPush(String key, Object value, long time);  
-  
-    /**  
-     * 向List结构中批量添加属性  
-     */  
-    Long lPushAll(String key, Object… values);  
-  
-    /**  
-     * 向List结构中批量添加属性  
-     */  
-    Long lPushAll(String key, Long time, Object… values);  
-  
-    /**  
-     * 从List结构中移除属性  
-     */  
-    Long lRemove(String key, long count, Object value);  
-}
-```
-
-```java
-package com.mole.mall.common.service.impl;  
-  
-import com.mole.mall.common.service.RedisService;  
 import org.springframework.beans.factory.annotation.Autowired;  
 import org.springframework.data.redis.core.RedisTemplate;  
-import org.springframework.stereotype.Service;  
+import org.springframework.stereotype.Component;  
   
 import java.util.List;  
 import java.util.Map;  
 import java.util.Set;  
 import java.util.concurrent.TimeUnit;  
   
-/**  
- * redis操作实现类  
- * Created by macro on 2020/3/3.  
- * Modified by Cyanix-0721 on 2024/9/28. 
- */
-@Service  
-public class RedisServiceImpl implements RedisService {  
+@Component  
+public class RedisUtil {  
   
     @Autowired  
     private RedisTemplate<String, Object> redisTemplate;  
   
-    @Override  
+    /**  
+     * 保存属性  
+     */  
     public void set(String key, Object value, long time) {  
-       // 设置带有过期时间的键值对  
-       redisTemplate.opsForValue().set(key, value, time, TimeUnit.SECONDS);  
+        redisTemplate.opsForValue().set(key, value, time, TimeUnit.SECONDS);  
     }  
   
-    @Override  
+    /**  
+     * 保存属性  
+     */  
     public void set(String key, Object value) {  
-       // 设置键值对  
-       redisTemplate.opsForValue().set(key, value);  
+        redisTemplate.opsForValue().set(key, value);  
     }  
   
-    @Override  
+    /**  
+     * 获取属性  
+     */  
     public Object get(String key) {  
-       // 获取键对应的值  
-       return redisTemplate.opsForValue().get(key);  
+        return redisTemplate.opsForValue().get(key);  
     }  
   
-    @Override  
+    /**  
+     * 删除属性  
+     */  
     public Boolean del(String key) {  
-       // 删除键  
-       return redisTemplate.delete(key);  
+        return redisTemplate.delete(key);  
     }  
   
-    @Override  
+    /**  
+     * 批量删除属性  
+     */  
     public Long del(List<String> keys) {  
-       // 批量删除键  
-       return redisTemplate.delete(keys);  
+        return redisTemplate.delete(keys);  
     }  
   
-    @Override  
+    /**  
+     * 设置过期时间  
+     */  
     public Boolean expire(String key, long time) {  
-       // 设置键的过期时间  
-       return redisTemplate.expire(key, time, TimeUnit.SECONDS);  
+        return redisTemplate.expire(key, time, TimeUnit.SECONDS);  
     }  
   
-    @Override  
+    /**  
+     * 获取过期时间  
+     */  
     public Long getExpire(String key) {  
-       // 获取键的过期时间  
-       return redisTemplate.getExpire(key, TimeUnit.SECONDS);  
+        return redisTemplate.getExpire(key, TimeUnit.SECONDS);  
     }  
   
-    @Override  
+    /**  
+     * 判断是否有该属性  
+     */  
     public Boolean hasKey(String key) {  
-       // 判断键是否存在  
-       return redisTemplate.hasKey(key);  
+        return redisTemplate.hasKey(key);  
     }  
   
-    @Override  
+    /**  
+     * 按delta递增  
+     */  
     public Long incr(String key, long delta) {  
-       // 增加键的值  
-       return redisTemplate.opsForValue().increment(key, delta);  
+        return redisTemplate.opsForValue().increment(key, delta);  
     }  
   
-    @Override  
+    /**  
+     * 按delta递减  
+     */  
     public Long decr(String key, long delta) {  
-       // 减少键的值  
-       return redisTemplate.opsForValue().increment(key, - delta);  
+        return redisTemplate.opsForValue().increment(key, -delta);  
     }  
   
-    @Override  
+    /**  
+     * 获取Hash结构中的属性  
+     */  
     public Object hGet(String key, String hashKey) {  
-       // 获取哈希键对应的值  
-       return redisTemplate.opsForHash().get(key, hashKey);  
+        return redisTemplate.opsForHash().get(key, hashKey);  
     }  
   
-    @Override  
+    /**  
+     * 向Hash结构中放入一个属性  
+     */  
     public Boolean hSet(String key, String hashKey, Object value, long time) {  
-       // 设置哈希键值对并设置过期时间  
-       redisTemplate.opsForHash().put(key, hashKey, value);  
-       return expire(key, time);  
+        redisTemplate.opsForHash().put(key, hashKey, value);  
+        return expire(key, time);  
     }  
   
-    @Override  
+    /**  
+     * 向Hash结构中放入一个属性  
+     */  
     public void hSet(String key, String hashKey, Object value) {  
-       // 设置哈希键值对  
-       redisTemplate.opsForHash().put(key, hashKey, value);  
+        redisTemplate.opsForHash().put(key, hashKey, value);  
     }  
   
-    @Override  
+    /**  
+     * 直接获取整个Hash结构  
+     */  
     public Map<Object, Object> hGetAll(String key) {  
-       // 获取哈希表中所有键值对  
-       return redisTemplate.opsForHash().entries(key);  
+        return redisTemplate.opsForHash().entries(key);  
     }  
   
-    @Override  
+    /**  
+     * 直接设置整个Hash结构  
+     */  
     public Boolean hSetAll(String key, Map<String, Object> map, long time) {  
-       // 批量设置哈希键值对并设置过期时间  
-       redisTemplate.opsForHash().putAll(key, map);  
-       return expire(key, time);  
+        redisTemplate.opsForHash().putAll(key, map);  
+        return expire(key, time);  
     }  
   
-    @Override  
+    /**  
+     * 直接设置整个Hash结构  
+     */  
     public void hSetAll(String key, Map<String, ?> map) {  
-       // 批量设置哈希键值对  
-       redisTemplate.opsForHash().putAll(key, map);  
+        redisTemplate.opsForHash().putAll(key, map);  
     }  
   
-    @Override  
+    /**  
+     * 删除Hash结构中的属性  
+     */  
     public void hDel(String key, Object… hashKey) {  
-       // 删除哈希键  
-       redisTemplate.opsForHash().delete(key, hashKey);  
+        redisTemplate.opsForHash().delete(key, hashKey);  
     }  
   
-    @Override  
+    /**  
+     * 判断Hash结构中是否有该属性  
+     */  
     public Boolean hHasKey(String key, String hashKey) {  
-       // 判断哈希键是否存在  
-       return redisTemplate.opsForHash().hasKey(key, hashKey);  
+        return redisTemplate.opsForHash().hasKey(key, hashKey);  
     }  
   
-    @Override  
+    /**  
+     * Hash结构中属性递增  
+     */  
     public Long hIncr(String key, String hashKey, Long delta) {  
-       // 增加哈希键的值  
-       return redisTemplate.opsForHash().increment(key, hashKey, delta);  
+        return redisTemplate.opsForHash().increment(key, hashKey, delta);  
     }  
   
-    @Override  
+    /**  
+     * Hash结构中属性递减  
+     */  
     public Long hDecr(String key, String hashKey, Long delta) {  
-       // 减少哈希键的值  
-       return redisTemplate.opsForHash().increment(key, hashKey, - delta);  
+        return redisTemplate.opsForHash().increment(key, hashKey, -delta);  
     }  
   
-    @Override  
+    /**  
+     * 获取Set结构  
+     */  
     public Set<Object> sMembers(String key) {  
-       // 获取集合中的所有成员  
-       return redisTemplate.opsForSet().members(key);  
+        return redisTemplate.opsForSet().members(key);  
     }  
   
-    @Override  
+    /**  
+     * 向Set结构中添加属性  
+     */  
     public Long sAdd(String key, Object… values) {  
-       // 向集合中添加成员  
-       return redisTemplate.opsForSet().add(key, values);  
+        return redisTemplate.opsForSet().add(key, values);  
     }  
   
-    @Override  
+    /**  
+     * 向Set结构中添加属性  
+     */  
     public Long sAdd(String key, long time, Object… values) {  
-       // 向集合中添加成员并设置过期时间  
-       Long count = redisTemplate.opsForSet().add(key, values);  
-       expire(key, time);  
-       return count;  
+        Long count = redisTemplate.opsForSet().add(key, values);  
+        expire(key, time);  
+        return count;  
     }  
   
-    @Override  
+    /**  
+     * 是否为Set中的属性  
+     */  
     public Boolean sIsMember(String key, Object value) {  
-       // 判断值是否是集合中的成员  
-       return redisTemplate.opsForSet().isMember(key, value);  
+        return redisTemplate.opsForSet().isMember(key, value);  
     }  
   
-    @Override  
+    /**  
+     * 获取Set结构的长度  
+     */  
     public Long sSize(String key) {  
-       // 获取集合的大小  
-       return redisTemplate.opsForSet().size(key);  
+        return redisTemplate.opsForSet().size(key);  
     }  
   
-    @Override  
+    /**  
+     * 删除Set结构中的属性  
+     */  
     public Long sRemove(String key, Object… values) {  
-       // 移除集合中的成员  
-       return redisTemplate.opsForSet().remove(key, values);  
+        return redisTemplate.opsForSet().remove(key, values);  
     }  
   
-    @Override  
+    /**  
+     * 获取List结构中的属性  
+     */  
     public List<Object> lRange(String key, long start, long end) {  
-       // 获取列表中的元素  
-       return redisTemplate.opsForList().range(key, start, end);  
+        return redisTemplate.opsForList().range(key, start, end);  
     }  
   
-    @Override  
+    /**  
+     * 获取List结构的长度  
+     */  
     public Long lSize(String key) {  
-       // 获取列表的长度  
-       return redisTemplate.opsForList().size(key);  
+        return redisTemplate.opsForList().size(key);  
     }  
   
-    @Override  
+    /**  
+     * 根据索引获取List中的属性  
+     */  
     public Object lIndex(String key, long index) {  
-       // 获取列表中指定索引的元素  
-       return redisTemplate.opsForList().index(key, index);  
+        return redisTemplate.opsForList().index(key, index);  
     }  
   
-    @Override  
+    /**  
+     * 向List结构中添加属性  
+     */  
     public Long lPush(String key, Object value) {  
-       // 向列表中添加元素  
-       return redisTemplate.opsForList().rightPush(key, value);  
+        return redisTemplate.opsForList().rightPush(key, value);  
     }  
   
-    @Override  
+    /**  
+     * 向List结构中添加属性  
+     */  
     public Long lPush(String key, Object value, long time) {  
-       // 向列表中添加元素并设置过期时间  
-       Long index = redisTemplate.opsForList().rightPush(key, value);  
-       expire(key, time);  
-       return index;  
+        Long index = redisTemplate.opsForList().rightPush(key, value);  
+        expire(key, time);  
+        return index;  
     }  
   
-    @Override  
+    /**  
+     * 向List结构中批量添加属性  
+     */  
     public Long lPushAll(String key, Object… values) {  
-       // 批量向列表中添加元素  
-       return redisTemplate.opsForList().rightPushAll(key, values);  
+        return redisTemplate.opsForList().rightPushAll(key, values);  
     }  
   
-    @Override  
+    /**  
+     * 向List结构中批量添加属性  
+     */  
     public Long lPushAll(String key, Long time, Object… values) {  
-       // 批量向列表中添加元素并设置过期时间  
-       Long count = redisTemplate.opsForList().rightPushAll(key, values);  
-       expire(key, time);  
-       return count;  
+        Long count = redisTemplate.opsForList().rightPushAll(key, values);  
+        expire(key, time);  
+        return count;  
     }  
   
-    @Override  
+    /**  
+     * 从List结构中移除属性  
+     */  
     public Long lRemove(String key, long count, Object value) {  
-       // 移除列表中的元素  
-       return redisTemplate.opsForList().remove(key, count, value);  
+        return redisTemplate.opsForList().remove(key, count, value);  
     }  
 }
 ```
@@ -1533,7 +1377,8 @@ import java.util.Enumeration;
 
 ## 5 OpenAPI 3
 
-通过 `addSecurityItem`, 给所有 http 接口添加 JWT 验证, Header `Authorization`, 前缀 `Bearer `
+- 使用 `Knife4j` 实现文档集成  
+- 通过 `addSecur tyItem`, 给所有 http 接口添加 JWT 验证, Header `Authorization`, 前缀 `Bearer `
 
 ```java
 package com.mole.mall.demo.config;  
@@ -1617,7 +1462,7 @@ public class SpringDocConfig implements WebMvcConfigurer {
 
 `spring-boot-starter-validation` 中有 `hibernate-validator`  
 
-通过创建注解 `!FlagValidator` 实现对字段的合法性检测
+通过创建注解 `@FlagValidator` 实现对字段的合法性检测
 
 ```java
 package com.mole.mall.demo.validator;  
@@ -1681,3 +1526,381 @@ public class FlagValidatorClass implements ConstraintValidator<FlagValidator, In
     }  
 }
 ```
+
+## 7 后端跨域处理
+
+```java
+package com.mole.mall.gateway.config;  
+  
+import org.springframework.context.annotation.Bean;  
+import org.springframework.context.annotation.Configuration;  
+import org.springframework.web.cors.CorsConfiguration;  
+import org.springframework.web.cors.reactive.CorsWebFilter;  
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;  
+import org.springframework.web.util.pattern.PathPatternParser;  
+  
+@Configuration  
+public class GlobalCorsConfig {  
+  
+    /**  
+     * 创建一个CORS过滤器Bean，允许所有来源、头和方法。  
+     *  
+     * @return 配置了指定CORS设置的CorsWebFilter。  
+     */  
+    @Bean  
+    public CorsWebFilter corsFilter() {  
+        CorsConfiguration config = new CorsConfiguration();  
+        config.addAllowedMethod("*"); // 允许所有HTTP方法  
+        config.addAllowedOriginPattern("*"); // 允许所有来源  
+        config.addAllowedHeader("*"); // 允许所有头  
+        config.setAllowCredentials(true); // 允许凭证（如Cookie、授权头等）  
+  
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource(new PathPatternParser());  
+        source.registerCorsConfiguration("/**", config); // 将CORS配置应用于所有路径  
+  
+        return new CorsWebFilter(source);  
+    }  
+  
+}
+```
+
+## 8 分页实现
+
+使用 PageHelper 进行分页，服务调用 PageHelper 后直接返回列表，具体处理在控制器中返回封装过的分页类，利用了 `ThreadLocal`
+
+![[PageHelper vs Spring Data JPA]]
+
+## 9 返回结果封装/异常处理
+
+- `ResultCode`
+
+	```java
+	package com.mole.health.result;  
+	  
+	import lombok.AllArgsConstructor;  
+	import lombok.Getter;  
+	import lombok.NoArgsConstructor;  
+	  
+	@Getter  
+	@NoArgsConstructor  
+	@AllArgsConstructor  
+	public enum ResultCode {  
+	    SUCCESS(200, "操作成功"),  
+	    FAILED(500, "操作失败"),  
+	    VALIDATE_FAILED(404, "参数检验失败"),  
+	    UNAUTHORIZED(401, "暂未登录或token已经过期"),  
+	    FORBIDDEN(403, "没有相关权限");  
+	  
+	    private long code;  
+	    private String message;  
+	}
+	```
+
+- `CommonResult`
+
+	```java
+	package com.mole.health.result;  
+	  
+	import cn.hutool.json.JSONUtil;  
+	import lombok.AllArgsConstructor;  
+	import lombok.Getter;  
+	import lombok.NoArgsConstructor;  
+	import lombok.Setter;  
+	  
+	@Getter  
+	@Setter  
+	@NoArgsConstructor  
+	@AllArgsConstructor  
+	public class CommonResult<T> {  
+	    private long code;  
+	    private String message;  
+	    private T data;  
+	  
+	    /**  
+	     * 成功返回结果  
+	     *  
+	     * @param data 获取的数据  
+	     */  
+	    public static <T> CommonResult<T> success(T data) {  
+	        return new CommonResult<>(ResultCode.SUCCESS.getCode(), ResultCode.SUCCESS.getMessage(), data);  
+	    }  
+	  
+	    /**  
+	     * 成功返回结果  
+	     *  
+	     * @param data    获取的数据  
+	     * @param message 提示信息  
+	     */  
+	    public static <T> CommonResult<T> success(String message, T data) {  
+	        return new CommonResult<>(ResultCode.SUCCESS.getCode(), message, data);  
+	    }  
+	  
+	    /**  
+	     * 失败返回结果  
+	     *  
+	     * @param errorCode 错误码  
+	     */  
+	    public static <T> CommonResult<T> failed(ResultCode errorCode) {  
+	        return new CommonResult<>(errorCode.getCode(), errorCode.getMessage(), null);  
+	    }  
+	  
+	    /**  
+	     * 失败返回结果  
+	     *  
+	     * @param errorCode 错误码  
+	     * @param message   错误信息  
+	     */  
+	    public static <T> CommonResult<T> failed(ResultCode errorCode, String message) {  
+	        return new CommonResult<>(errorCode.getCode(), message, null);  
+	    }  
+	  
+	    /**  
+	     * 失败返回结果  
+	     *  
+	     * @param message 提示信息  
+	     */  
+	    public static <T> CommonResult<T> failed(String message) {  
+	        return new CommonResult<>(ResultCode.FAILED.getCode(), message, null);  
+	    }  
+	  
+	    /**  
+	     * 失败返回结果  
+	     */  
+	    public static <T> CommonResult<T> failed() {  
+	        return failed(ResultCode.FAILED);  
+	    }  
+	  
+	    /**  
+	     * 参数验证失败返回结果  
+	     */  
+	    public static <T> CommonResult<T> validateFailed() {  
+	        return failed(ResultCode.VALIDATE_FAILED);  
+	    }  
+	  
+	    /**  
+	     * 参数验证失败返回结果  
+	     *  
+	     * @param message 提示信息  
+	     */  
+	    public static <T> CommonResult<T> validateFailed(String message) {  
+	        return failed(ResultCode.VALIDATE_FAILED, message);  
+	    }  
+	  
+	    /**  
+	     * 未登录返回结果  
+	     */  
+	    public static <T> CommonResult<T> unauthorized() {  
+	        return failed(ResultCode.UNAUTHORIZED);  
+	    }  
+	  
+	    /**  
+	     * 未登录返回结果  
+	     */  
+	    public static <T> CommonResult<T> unauthorized(String message) {  
+	        return failed(ResultCode.UNAUTHORIZED, message);  
+	    }  
+	  
+	    /**  
+	     * 未授权返回结果  
+	     */  
+	    public static <T> CommonResult<T> forbidden() {  
+	        return failed(ResultCode.FORBIDDEN);  
+	    }  
+	  
+	    /**  
+	     * 未授权返回结果  
+	     */  
+	    public static <T> CommonResult<T> forbidden(String message) {  
+	        return failed(ResultCode.FORBIDDEN, message);  
+	    }  
+	  
+	    @Override  
+	    public String toString() {  
+	        return JSONUtil.toJsonStr(this);  
+	    }  
+	}
+	```
+
+- `CommonPage`  
+	  见上述[[mall #8 分页实现|分页实现]]
+
+- `ApiException`
+
+	```java
+	package com.mole.health.exception;  
+	  
+	import com.mole.health.result.ResultCode;  
+	import lombok.Getter;  
+	  
+	@Getter  
+	public class ApiException extends RuntimeException {  
+	    // 这个字段保存 ResultCode 实例，包含错误码和错误消息  
+	    private ResultCode errorCode;  
+	  
+	    /**  
+	     * 接受 ResultCode 的构造函数。  
+	     * 将 ResultCode 中的错误消息传递给 RuntimeException 的构造函数。  
+	     * 这样可以通过 getMessage() 方法获取错误消息。  
+	     *  
+	     * @param errorCode 包含错误码和消息的 ResultCode 枚举实例  
+	     */  
+	    public ApiException(ResultCode errorCode) {  
+	        super(errorCode.getMessage()); // 将消息传递给 RuntimeException        this.errorCode = errorCode;    // 存储 ResultCode 实例  
+	    }  
+	  
+	    /**  
+	     * 接受自定义错误消息的构造函数。  
+	     * 将自定义消息传递给 RuntimeException 的构造函数。  
+	     *  
+	     * @param message 自定义错误消息  
+	     */  
+	    public ApiException(String message) {  
+	        super(message);  
+	    }  
+	  
+	    /**  
+	     * 接受 Throwable 原因的构造函数。  
+	     * 将原因传递给 RuntimeException 的构造函数。  
+	     *  
+	     * @param cause 异常的原因  
+	     */  
+	    public ApiException(Throwable cause) {  
+	        super(cause);  
+	    }  
+	  
+	    /**  
+	     * 接受自定义错误消息和 Throwable 原因的构造函数。  
+	     * 将消息和原因传递给 RuntimeException 的构造函数。  
+	     *  
+	     * @param message 自定义错误消息  
+	     * @param cause   异常的原因  
+	     */  
+	    public ApiException(String message, Throwable cause) {  
+	        super(message, cause);  
+	    }  
+	}
+	```
+
+- `Asserts`
+
+	```java
+	package com.mole.health.exception;  
+	  
+	import com.mole.health.result.ResultCode;  
+	  
+	public class Asserts {  
+	    public static void fail(String message) {  
+	        throw new ApiException(message);  
+	    }  
+	  
+	    public static void fail(ResultCode errorCode) {  
+	        throw new ApiException(errorCode);  
+	    }  
+	}
+	```
+
+- `GlobalExceptionHandler`
+
+	```java
+	package com.mole.health.exception;  
+	  
+	import com.mole.health.result.CommonResult;  
+	import org.springframework.validation.BindException;  
+	import org.springframework.validation.BindingResult;  
+	import org.springframework.validation.FieldError;  
+	import org.springframework.web.bind.MethodArgumentNotValidException;  
+	import org.springframework.web.bind.annotation.ControllerAdvice;  
+	import org.springframework.web.bind.annotation.ExceptionHandler;  
+	import org.springframework.web.bind.annotation.ResponseBody;  
+	  
+	@ControllerAdvice  
+	public class GlobalExceptionHandler {  
+	  
+	    /**  
+	     * 处理自定义API异常  
+	     *  
+	     * @param e ApiException 异常实例  
+	     * @return 包含错误码或错误信息的 CommonResult  
+	     */    @ResponseBody  
+	    @ExceptionHandler(value = ApiException.class)  
+	    public CommonResult<?> handle(ApiException e) {  
+	        if (e.getErrorCode() != null) {  
+	            return CommonResult.failed(e.getErrorCode());  
+	        }  
+	        return CommonResult.failed(e.getMessage());  
+	    }  
+	  
+	    /**  
+	     * 处理方法参数验证异常  
+	     *  
+	     * @param e MethodArgumentNotValidException 异常实例  
+	     * @return 包含验证错误信息的 CommonResult  
+	     */    @ResponseBody  
+	    @ExceptionHandler(value = MethodArgumentNotValidException.class)  
+	    public CommonResult<?> handleValidException(MethodArgumentNotValidException e) {  
+	        return getCommonResult(e.getBindingResult());  
+	    }  
+	  
+	    /**  
+	     * 处理绑定异常  
+	     *  
+	     * @param e BindException 异常实例  
+	     * @return 包含验证错误信息的 CommonResult  
+	     */    @ResponseBody  
+	    @ExceptionHandler(value = BindException.class)  
+	    public CommonResult<?> handleValidException(BindException e) {  
+	        return getCommonResult(e.getBindingResult());  
+	    }  
+	  
+	    /**  
+	     * 获取通用结果  
+	     *  
+	     * @param bindingResult 绑定结果  
+	     * @return 包含验证错误信息的 CommonResult  
+	     */    private CommonResult<?> getCommonResult(BindingResult bindingResult) {  
+	        String message = null;  
+	        if (bindingResult.hasErrors()) {  
+	            FieldError fieldError = bindingResult.getFieldError();  
+	            if (fieldError != null) {  
+	                message = fieldError.getField() + fieldError.getDefaultMessage();  
+	            }  
+	        }  
+	        return CommonResult.validateFailed(message);  
+	    }  
+	}
+	```
+
+> [!warning]
+>
+> 这个类 `GlobalExceptionHandler` 是一个全局异常处理类，它使用了 Spring 的 `@ControllerAdvice` 注解来捕获和处理应用程序中的异常。通过 `@ExceptionHandler` 注解，定义了几种常见的异常处理方法，以确保在出现异常时返回统一格式的响应。
+>
+> ### 工作流程
+> 1. **全局异常捕获**
+>    - 该类通过 `@ControllerAdvice` 注解成为一个全局异常处理器，当应用中的控制器方法抛出异常时，它会自动捕获并处理这些异常，提供统一的异常处理逻辑。
+>
+> 2. **处理自定义API异常**
+>    - `handle(ApiException e)` 方法专门处理自定义的 `ApiException`。如果 `ApiException` 包含错误码（`ErrorCode`），返回带有错误码的 `CommonResult`，否则返回错误信息。
+>
+> 3. **处理方法参数验证异常**
+>    - `handleValidException(MethodArgumentNotValidException e)` 处理当请求参数校验失败时抛出的 `MethodArgumentNotValidException` 异常。通过 `getCommonResult(e.getBindingResult())` 获取绑定的结果（校验失败的信息），并返回包含错误信息的 `CommonResult`。
+>
+> 4. **处理绑定异常**
+>    - `handleValidException(BindException e)` 处理 `BindException` 异常。类似于 `MethodArgumentNotValidException`，它通常也发生在参数校验过程中，通过 `getCommonResult` 来返回验证失败的结果。
+>
+> 5. **生成验证失败的响应**
+>    - `getCommonResult(BindingResult bindingResult)` 方法根据 `BindingResult` 获取字段的错误信息（如果有的话），然后构建并返回验证失败的 `CommonResult`。
+>
+> ### `MethodArgumentNotValidException` 和 `BindException` 的关系与区别
+> 这两个异常都与参数绑定和验证有关，但它们通常在不同的场景下抛出：
+>
+> 1. **`MethodArgumentNotValidException`**
+>    - 这个异常通常发生在**`@RequestBody`** 注解处理的请求参数验证失败时。比如，当你接收到一个 JSON 请求，并且需要将其反序列化为某个对象，如果这个对象的字段不满足校验规则（如 `@NotNull`、`@Size` 等注解的校验），就会抛出 `MethodArgumentNotValidException`。
+>    - 适用于请求体对象（通常是 JSON 请求）。
+>
+> 2. **`BindException`**
+>    - `BindException` 则通常发生在**`@ModelAttribute`** 或表单提交的数据绑定失败时。它也可以用于路径参数或查询参数的绑定验证失败场景。一般来说，这个异常发生在对普通的表单或 URL 参数进行数据绑定时。
+>    - 适用于表单提交、路径或查询参数。
+>
+> ### 总结
+> - `MethodArgumentNotValidException` 用于处理 `@RequestBody` 的 JSON 数据验证错误，而 `BindException` 则更多用于表单或 URL 参数的数据绑定错误。
+> - 在 `GlobalExceptionHandler` 中，这两个异常都通过 `BindingResult` 来提取验证错误信息，统一返回 `CommonResult` 格式的验证失败响应。

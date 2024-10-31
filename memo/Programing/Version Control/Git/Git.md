@@ -260,6 +260,8 @@ git worktree remove --force <路径>
 
 ## 2 协作开发
 
+### 2.1 Rebase & Merge
+
 > [!tip] 当前开发分支最好 `push` 前，`pull -rebase <父级分支>` 进行 DEBUG，然后 `父级分支 merge <开发分支>`
 
 为了确保在 `dev` 分支合并多个开发者分支后，保留每个提交的原始作者信息，并最终将这些信息准确地推送到主分支 `main`，您可以采用以下策略：
@@ -343,6 +345,67 @@ git commit --amend -m "新的提交信息"  # 修改最后一次提交的提交�
 - **在团队协作中，确保所有成员都了解并遵循分支管理策略。**
 
 通过遵循上述策略，您可以确保在合并多个开发者分支时保留每个提交的原始作者信息，并将其准确地推送到主分支，从而维护清晰的项目历史记录。
+
+### 2.2 Feature Branch Workflow
+
+1. 从开发分支创建功能分支
+
+   ```
+   git checkout develop
+   git pull origin develop
+   git checkout -b feature/new-feature
+   ```
+
+   这样可以确保你的功能分支基于最新的开发分支。
+
+2. 在功能分支上进行开发  
+   正常进行代码编写、提交等工作。
+
+3. 定期从开发分支合并更新
+
+   ```
+   git checkout feature/new-feature
+   git merge develop
+   ```
+
+   这可以保持你的功能分支与开发分支同步,减少最终合并时的冲突。
+
+4. 功能完成后,创建Pull Request  
+   将你的功能分支推送到远程仓库,然后创建一个Pull Request到开发分支。
+
+5. 代码审查和讨论  
+   团队成员可以在Pull Request中进行代码审查和讨论。
+
+6. 合并到开发分支  
+   一旦Pull Request被批准,就可以将功能分支合并到开发分支。
+
+   ```
+   git checkout develop
+   git merge --no-ff feature/new-feature
+   git push origin develop
+   ```
+
+7. 删除功能分支
+
+   ```
+   git branch -d feature/new-feature
+   ```
+
+这种方法的优点:
+
+1. 简单直观: 每个功能都有自己的分支,易于理解和管理。
+
+2. 隔离开发: 每个功能独立开发,不会互相干扰。
+
+3. 便于协作: 多人可以在同一个功能分支上协作,或者并行开发不同的功能。
+
+4. 清晰的历史: 保留了完整的开发历史,包括每个功能的详细变更。
+
+5. 容易回滚: 如果某个功能出现问题,可以很容易地回滚整个功能。
+
+6. 有利于持续集成: 可以在合并前对每个功能进行独立测试。
+
+7. 减少合并冲突: 通过定期从开发分支合并更新,可以减少最终合并时的冲突。
 
 ## 3 [Conversatonal Git](https://www.conventionalcommits.org/zh-hans/v1.0.0/)
 

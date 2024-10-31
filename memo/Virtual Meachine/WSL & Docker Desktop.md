@@ -1,3 +1,9 @@
+---
+tags:
+  - Docker
+  - WSL
+---
+
 # WSL & Docker Desktop
 
 ## 1 使用原因
@@ -45,6 +51,8 @@
 
 #### 4.1.1 Win 和 Linux 的路径问题
 
+##### 4.1.1.1 `${PWD}`
+
 - 因为使用 Docker Desktop 是直接把物理机的项目在 WSL 内运行, 挂载的时候可能出现无法读取到目录的问题
 - `Dockerfile` 和 `docker-compose` 文件中的路径都是相对于**构建上下文**（build context）的相对路径
 	- 所以建议 compose 内指定上下文路径的时候使用相对的项目根目录, 同样传输到 `Dockerfile` 中的也是这个相对路径 ![WSL & Docker Desktop-IMG-20240920143517175](assets/WSL%20&%20Docker%20Desktop/WSL%20&%20Docker%20Desktop-IMG-20240920143517175.png)
@@ -58,3 +66,8 @@
 > ```
 >
 > 在 Git Bash 或 WSL 中，${PWD} 的工作方式与类 Unix 系统类似。
+
+##### 4.1.1.2 相对路径
+
+- 也可以使用相对于 compose 的相对路径，但是本地和远程目录间不能有空格，使用冒号 `:` 分隔
+- ![[WSL & Docker Desktop-IMG-20241015144614431.png]]

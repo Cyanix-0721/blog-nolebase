@@ -4,22 +4,24 @@ tags:
   - VueRouter
 ---
 
-# Vue Router 使用文档
+# Vue Router
 
-[Vue Router](https://router.vuejs.org/zh/) 是 [Vue.js](https://cn.vuejs.org/) 的官方路由。它与 Vue.js 核心深度集成，让用 Vue.js 构建单页应用变得轻而易举。功能包括：
+[Vue Router](https://router.vuejs.org/zh/) 是 [Vue.js](https://cn.vuejs.org/) 的官方路由管理工具，帮助开发者轻松构建单页应用（SPA）。它深度集成了 Vue. js 核心特性，使页面导航更加便捷和灵活。
 
-- 嵌套路由映射
-- 动态路由选择
-- 模块化、基于组件的路由配置
-- 路由参数、查询、通配符
-- 展示由 Vue.js 的过渡系统提供的过渡效果
-- 细致的导航控制
-- 自动激活 CSS 类的链接
-- HTML5 history 模式或 hash 模式
-- 可定制的滚动行为
-- URL 的正确编码
+## 1 功能概述
 
-## 1 安装
+- **嵌套路由映射**：支持在路由中嵌套子路由，方便构建复杂的页面布局。
+- **动态路由选择**：支持基于路径参数或查询参数的动态路由匹配。
+- **模块化路由配置**：路由基于组件配置，灵活而可扩展。
+- **路由参数、查询和通配符支持**：可以通过 URL 参数和查询来传递数据。
+- **过渡效果**：与 Vue. js 的过渡系统结合，路由切换时可以使用动画效果。
+- **导航守卫**：通过守卫控制导航过程，执行权限验证、异步数据加载等操作。
+- **自动激活 CSS 类**：为匹配当前路由的链接自动添加 CSS 类，方便做样式标识。
+- **多种路由模式**：支持 HTML 5 history 模式或 hash 模式。
+- **滚动行为定制**：可以自定义页面滚动条的行为，提升用户体验。
+- **URL 编码**：对 URL 进行正确的编码和解析，确保特殊字符处理得当。
+
+## 2 安装
 
 首先，确保你已经安装了 `pnpm`，然后在项目中安装 `vue-router`：
 
@@ -27,7 +29,7 @@ tags:
 pnpm add vue-router@next
 ```
 
-## 2 创建路由器
+## 3 创建路由器
 
 在 `src` 目录下创建 `router` 文件夹，并在其中创建 `index.js` 文件：
 
@@ -71,7 +73,7 @@ createApp(App)
   .mount('#app')
 ```
 
-## 3 动态路由匹配
+## 4 动态路由匹配
 
 动态路由匹配允许你匹配带参数的路径，例如用户 ID 等：
 
@@ -101,7 +103,7 @@ export default {
 </script>
 ```
 
-## 4 组件传参
+## 5 组件传参
 
 有时候你可能希望通过路由传递更多的参数，这可以通过 `props` 选项实现：
 
@@ -132,7 +134,7 @@ export default {
 </script>
 ```
 
-## 5 嵌套路由
+## 6 嵌套路由
 
 嵌套路由允许你在组件中嵌套子组件：
 
@@ -172,7 +174,7 @@ export default {
 </script>
 ```
 
-## 6 重定向和别名
+## 7 重定向和别名
 
 重定向可以让你将一个路径重定向到另一个路径：
 
@@ -197,7 +199,75 @@ const routes = [
 ]
 ```
 
-## 7 示例：左侧导航栏，点击右侧显示对应内容
+## 8 导航守卫
+
+### 8.1 什么是导航守卫？
+
+导航守卫（Navigation Guards）是 Vue Router 提供的一种拦截功能，允许你在路由切换前或切换后执行特定逻辑操作。通过导航守卫，可以实现权限控制、数据预加载等功能。
+
+### 8.2 导航守卫分类
+
+- **全局守卫**：影响所有路由导航。
+  - `beforeEach`：全局前置守卫，路由切换前触发。
+  - `afterEach`：全局后置守卫，路由切换后触发。
+- **路由独享守卫**：仅影响单个路由。
+  - `beforeEnter`：路由进入前触发。
+- **组件内守卫**：仅影响单个组件。
+  - `beforeRouteEnter`：进入路由前触发，不能访问 `this`，可通过 `next` 函数执行操作。
+  - `beforeRouteUpdate`：在当前路由发生变化时（复用组件时）触发。
+  - `beforeRouteLeave`：在导航离开组件前触发，可以用来阻止离开。
+
+### 8.3 导航守卫示例
+
+#### 8.3.1 权限验证
+
+在路由跳转前，检查用户是否具有访问权限。如果没有权限，则跳转至登录页面。
+
+```javascript
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = false; // 假设用户未登录
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next('/login');
+  } else {
+    next();
+  }
+});
+```
+
+#### 8.3.2 数据预加载
+
+在进入某个路由前，先加载必要的数据，确保数据加载完成后再进行路由跳转。
+
+```javascript
+router.beforeEach((to, from, next) => {
+  if (to.name === 'UserProfile') {
+    store.dispatch('fetchUserProfile').then(() => {
+      next();
+    }).catch(() => {
+      next(false);
+    });
+  } else {
+    next();
+  }
+});
+```
+
+#### 8.3.3 离开页面时保存状态
+
+当用户有未保存的表单内容时，提醒用户是否要离开当前页面。
+
+```javascript
+beforeRouteLeave (to, from, next) {
+  const answer = window.confirm('You have unsaved changes. Do you really want to leave?');
+  if (answer) {
+    next();
+  } else {
+    next(false);
+  }
+}
+```
+
+## 9 示例：左侧导航栏，点击右侧显示对应内容
 
 ```
 src/
@@ -217,7 +287,7 @@ src/
 ├── main.js
 ```
 
-### 7.1 `src/router/index.js`
+### 9.1 `src/router/index.js`
 
 ```javascript
 import { createRouter, createWebHistory } from 'vue-router'
@@ -272,7 +342,7 @@ const router = createRouter({
 export default router
 ```
 
-### 7.2 `src/components/Navbar.vue`
+### 9.2 `src/components/Navbar.vue`
 
 ```vue
 <template>
@@ -303,7 +373,7 @@ li {
 </style>
 ```
 
-### 7.3 `src/views/Home.vue`
+### 9.3 `src/views/Home.vue`
 
 ```vue
 <template>
@@ -313,7 +383,7 @@ li {
 </template>
 ```
 
-### 7.4 `src/views/About.vue`
+### 9.4 `src/views/About.vue`
 
 ```vue
 <template>
@@ -323,7 +393,7 @@ li {
 </template>
 ```
 
-### 7.5 `src/views/User.vue`
+### 9.5 `src/views/User.vue`
 
 ```vue
 <template>
@@ -344,7 +414,7 @@ export default {
 </script>
 ```
 
-### 7.6 `src/views/UserProfile.vue`
+### 9.6 `src/views/UserProfile.vue`
 
 ```vue
 <template>
@@ -354,7 +424,7 @@ export default {
 </template>
 ```
 
-### 7.7 `src/views/UserPosts.vue`
+### 9.7 `src/views/UserPosts.vue`
 
 ```vue
 <template>
@@ -364,7 +434,7 @@ export default {
 </template>
 ```
 
-### 7.8 `src/views/NotFound.vue`
+### 9.8 `src/views/NotFound.vue`
 
 ```vue
 <template>
@@ -375,7 +445,7 @@ export default {
 </template>
 ```
 
-### 7.9 `src/App.vue`
+### 9.9 `src/App.vue`
 
 ```vue
 <template>
@@ -409,7 +479,7 @@ export default {
 </style>
 ```
 
-### 7.10 `src/main.js`
+### 9.10 `src/main.js`
 
 ```javascript
 import { createApp } from 'vue'
@@ -421,7 +491,7 @@ createApp(App)
   .mount('#app')
 ```
 
-### 7.11 项目样式
+### 9.11 项目样式
 
 添加一些基本的样式，使得左侧导航栏和右侧内容区域布局合理：
 
