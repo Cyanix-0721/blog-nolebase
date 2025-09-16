@@ -127,122 +127,91 @@ location /ws/ {
 ## 6 `nginx.conf` 示例
 
 ```conf
-# 设置工作进程数  
-worker_processes  auto;  
-  
-events {  
-    # 每个工作进程的最大连接数  
-    worker_connections  1024;  
-}  
-  
-http {  
-    # 包含MIME类型定义文件  
-    include       mime.types;  
-    # 默认的MIME类型  
-    default_type  application/octet-stream;  
-  
-    # 启用高效文件传输模式  
-    sendfile        on;  
-    # 设置长连接超时时间  
-    keepalive_timeout  65;  
-  
-    # 根据HTTP头部的Upgrade字段设置连接类型  
-    map $http_upgrade $connection_upgrade {  
-        default upgrade;  
-        '' close;  
-    }  
-  
-    # 定义上游服务器组  
-    upstream webservers {  
-        server 127.0.0.1:8080 weight=90;  # 主服务器  
-        # 备用服务器  
-        # server 127.0.0.1:8088 weight=10;  
-    }  
-  
-    server {  
-        # 监听80端口  
-        listen       80;  
-        # 服务器名称  
-        server_name  localhost;  
-  
-        location / {  
-            # 设置根目录  
-            # root   html/sky;  
-            root   /usr/share/nginx/html/sky;  
-            # 默认首页文件  
-            index  index.html index.htm;  
-        }  
-  
-        # 自定义错误页面  
-        error_page   500 502 503 504  /50x.html;  
-        location = /50x.html {  
-            # root    html;  
-            root    /usr/share/nginx/html;  
-        }  
-  
-        # 反向代理配置，处理管理端发送的请求  
-        location /api/ {  
-            proxy_pass   http://127.0.0.1:8080/admin/;  
-            # 使用上游服务器组  
-            # proxy_pass   http://webservers/admin/;  
-            # 传递请求头部信息  
-            # proxy_set_header Host $host;  
-            # proxy_set_header X-Real-IP $remote_addr;
-			# proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            # proxy_set_header X-Forwarded-Proto $scheme;
-        }  
-  
-        # 反向代理配置，处理用户端发送的请求  
-        location /user/ {  
-            proxy_pass   http://webservers/user/;  
-        }  
-  
-        # WebSocket代理配置  
-        location /ws/ {  
-            proxy_pass   http://webservers/ws/;  
-            proxy_http_version 1.1;  
-            proxy_read_timeout 3600s;  
-            proxy_set_header Upgrade $http_upgrade;  
-            proxy_set_header Connection "$connection_upgrade";  
-        }  
-  
-		# 媒体文件位置配置（已注释）  
-		    # location /media {  
-		    #     root 配置媒体文件位置;  # 例如: D:/static  
-		    #     # 注：在 D:/static 目录下创建 media 文件夹  
-		    # }  
-		  
-		    # 处理PHP脚本的FastCGI配置（已注释）  
-		    # location ~ \.php$ {  
-		    #     root           html;    #     fastcgi_pass   127.0.0.1:9000;    #     fastcgi_index  index.php;    #     fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;    #     include        fastcgi_params;    # }  
-		    # 禁止访问.htaccess文件（已注释）  
-		    # location ~ /\.ht {  
-		    #     deny  all;    # }}  
-		  
-		# 另一个虚拟主机配置示例（已注释）  
-		# server {  
-		#     listen       8000;  
-		#     listen       somename:8080;  
-		#     server_name  somename  alias  another.alias;  
-		#     location / {  
-		#         root   html;  
-		#         index  index.html index.htm;  
-		#     }  
-		# }  
-		  
-		# HTTPS服务器配置示例（已注释）  
-		# server {  
-		#     listen       443 ssl;  
-		#     server_name  localhost;  
-		#     ssl_certificate      cert.pem;  
-		#     ssl_certificate_key  cert.key;  
-		#     ssl_session_cache    shared:SSL:1m;  
-		#     ssl_session_timeout  5m;  
-		#     ssl_ciphers  HIGH:!aNULL:!MD5;  
-		#     ssl_prefer_server_ciphers  on;  
-		#     location / {  
-		#         root   html;  
-		#         index  index.html index.htm;  
-		#     }  
-		# }
+# 设置 NGINX 运行的用户和用户组
+user nginx;
+
+# 工作进程数量，建议设置为 CPU 核心数
+worker_processes 1;
+
+# 错误日志文件及日志级别
+error_log  /var/log/nginx/error.log warn;
+
+# 主进程 ID 存储文件
+pid        /var/run/nginx.pid;
+
+events {
+    # 每个工作进程的最大连接数
+    worker_connections  1024;
+}
+
+http {
+    # 加载 MIME 类型映射文件
+    include       /etc/nginx/mime.types;
+
+    # 默认文件类型
+    default_type  application/octet-stream;
+
+    # 自定义访问日志格式
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    # 访问日志文件及格式
+    access_log  /var/log/nginx/access.log  main;
+
+    # 启用高效文件传输模式
+    sendfile        on;
+
+    # 保持连接超时时间
+    keepalive_timeout  65;
+
+    server {
+        # 监听端口
+        listen       80;
+
+        # 服务器名称
+        server_name  localhost;
+
+        # 根路径请求处理
+        location / {
+            # 网站根目录
+            root   /usr/share/nginx/html;
+
+            # 默认首页文件
+            index  index.html index.htm;
+
+            # 尝试文件
+            try_files $uri $uri/ /index.html;
+        }
+        
+        location /api/ {
+            proxy_pass http://springboot:8080/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /api/ws {
+            proxy_pass http://springboot:8080/ws;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /test {
+            return 200 "Nginx is working";
+        }
+
+        # 错误页面配置
+        # error_page   500 502 503 504  /50x.html;
+        # location = /50x.html {
+        #     root   /usr/share/nginx/html;
+        # }
+    }
+}
 ```

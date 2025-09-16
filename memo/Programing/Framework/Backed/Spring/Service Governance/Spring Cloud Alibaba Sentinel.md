@@ -1,208 +1,418 @@
----
-tags:
-  - Framework
-  - SpringCloud
----
+# [Spring Cloud Alibaba Sentinel](https://sentinelguard.io/zh-cn/docs/introduction.html)
 
-# Spring Cloud Alibaba Sentinel
+## 1 Sentinel介绍
 
-**Spring Cloud Alibaba Sentinel** 是 Spring Cloud Alibaba 生态系统中的服务治理组件，主要用于**熔断**、**限流**和**系统保护**。Sentinel 为分布式系统提供了强大的流量控制、熔断降级、系统自适应保护、热点参数限流等多种功能，尤其适合高并发、复杂的微服务架构。
+### 1.1 什么是Sentinel
 
-在电商平台中，Sentinel 可以有效地保护各个微服务，防止因流量激增或服务异常导致的系统崩溃，并能通过熔断和限流保证服务的稳定性。以下是 Sentinel 在熔断和限流方面的主要应用和实现方式。
+Sentinel是阿里巴巴开源的分布式系统的流量防卫兵，以流量为切入点，从流量控制、熔断降级、系统负载保护等多个维度保护服务的稳定性。
 
-> [!summary]
->
-> Spring Cloud Alibaba Sentinel 提供了丰富的流量控制和熔断降级功能，能够有效地提升电商平台的稳定性和容错能力。通过限流、熔断、热点参数限流等机制，开发者可以在高并发场景下保护微服务，确保系统在高负载下仍然能够稳定运行。
+### 1.2 主要特性
 
-> [!info] 在电商平台中的应用场景
->
-> - **限流保护**：防止在促销活动或流量高峰期时，单个微服务或接口因流量激增而崩溃。通过限流，系统可以优雅地拒绝部分请求，确保关键服务的正常运行。
->
-> - **熔断降级**：在某些服务不可用或响应时间过长时，可以通过熔断机制触发回退逻辑，防止整个系统因服务链路问题而瘫痪。电商平台可以为支付服务、物流服务等设置熔断规则，以保证订单系统的稳定性。
->
-> - **热点参数限流**：在电商平台中，某些商品（如爆款商品）的访问量可能异常高，通过热点参数限流可以防止单一商品 ID 过多访问导致系统资源被耗尽。
+- 流量控制
+- 熔断降级
+- 系统负载保护
+- 实时监控
+- 控制台管理
+- 规则持久化
+- 集群流控
 
-## 1 Sentinel 核心功能
+### 1.3 核心概念
 
-- **流量控制（限流）**：通过定义规则限制请求的流量，如 QPS、并发量等，确保服务在负载下稳定运行。
-- **熔断降级**：根据响应时间或失败率进行熔断，防止连锁反应影响整个系统。
-- **热点参数限流**：针对特定参数（如商品 ID）的访问进行限流，防止单一热点资源耗尽系统资源。
-- **系统保护**：监控系统的整体状况（如 CPU 使用率、内存使用等），防止因系统过载导致崩溃。
+1. **资源**：可以是Java方法、URL或其他逻辑调用
+2. **规则**：流控规则、熔断规则、系统规则等
+3. **降级**：服务降级、熔断
+4. **滑动窗口**：接口统计的时间窗口
 
-## 2 添加 Sentinel 依赖
+## 2 快速开始
 
-在 `pom.xml` 中添加 Spring Cloud Alibaba Sentinel 的依赖：
+### 2.1 Maven依赖
 
 ```xml
+<!-- Sentinel核心依赖 -->
+<dependency>
+    <groupId>com.alibaba.csp</groupId>
+    <artifactId>sentinel-core</artifactId>
+    <version>${sentinel.version}</version>
+</dependency>
+
+<!-- Spring Cloud Alibaba Sentinel -->
 <dependency>
     <groupId>com.alibaba.cloud</groupId>
     <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
+    <version>${spring.cloud.alibaba.version}</version>
+</dependency>
+
+<!-- Sentinel控制台 -->
+<dependency>
+    <groupId>com.alibaba.csp</groupId>
+    <artifactId>sentinel-transport-simple-http</artifactId>
+    <version>${sentinel.version}</version>
 </dependency>
 ```
 
-## 3 配置 Sentinel
-
-在 `application.yml` 中，配置 Sentinel 的基础信息：
+### 2.2 基础配置(application.yml)
 
 ```yaml
 spring:
   cloud:
     sentinel:
       transport:
-        dashboard: localhost:8080  # Sentinel 控制台地址
-      eager: true  # 启动时即加载 Sentinel
+        # 控制台地址
+        dashboard: localhost:8080
+        # 客户端监控API的端口
+        port: 8719
+      # 是否饥饿加载
+      eager: true
+      # Servlet Filter配置
+      filter:
+        enabled: true
+      # 取消Sentinel控制台懒加载
+      web-context-unify: false
+      # 规则文件配置
+      datasource:
+        ds1:
+          nacos:
+            server-addr: localhost:8848
+            dataId: ${spring.application.name}-flow-rules
+            groupId: SENTINEL_GROUP
+            rule-type: flow
 ```
 
-启动 Sentinel 控制台并访问 `http://localhost:8080` 监控微服务的运行状况。
+## 3 流量控制
 
-## 4 实现限流
-
-### 4.1 基于资源的限流
-
-Sentinel 可以基于方法或资源名进行限流。通过 `@SentinelResource` 注解，可以对某个方法设置限流规则。
-
-**示例：限制库存查询接口的访问频率**
-
-在电商平台中，库存查询是一个高频访问接口，通过 Sentinel 对其进行限流，确保系统稳定。
+### 3.1 流控规则
 
 ```java
-import com.alibaba.csp.sentinel.annotation.SentinelResource;
-import org.springframework.stereotype.Service;
-
 @Service
-public class InventoryService {
-
-    @SentinelResource(value = "checkInventory", blockHandler = "handleFlowLimit")
-    public String checkInventory(String productId) {
-        // 查询库存逻辑
-        return "Product ID: " + productId + ", inventory available";
+public class OrderService {
+    
+    @SentinelResource(value = "createOrder", 
+                      blockHandler = "createOrderBlockHandler",
+                      fallback = "createOrderFallback")
+    public String createOrder() {
+        // 业务逻辑
+        return "订单创建成功";
     }
-
-    // 限流后的回调方法
-    public String handleFlowLimit(String productId, BlockException ex) {
-        return "Too many requests. Please try again later.";
+    
+    // 流控处理
+    public String createOrderBlockHandler(BlockException ex) {
+        return "订单创建被限流";
+    }
+    
+    // 降级处理
+    public String createOrderFallback(Throwable e) {
+        return "订单创建异常";
     }
 }
 ```
 
-在该示例中，`checkInventory` 方法是受保护的资源。当请求频率超过限流阈值时，`handleFlowLimit` 方法会被调用，返回一个友好的错误提示。
-
-### 4.2 配置限流规则
-
-限流规则可以通过 Sentinel 控制台进行配置，也可以通过代码进行动态配置。以下示例展示了如何通过代码为资源设置限流规则：
+### 3.2 Java代码配置规则
 
 ```java
-import com.alibaba.csp.sentinel.slots.block.RuleConstant;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRule;
-import com.alibaba.csp.sentinel.slots.block.flow.FlowRuleManager;
-
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
-
-@Service
+@Configuration
 public class SentinelConfig {
-
+    
     @PostConstruct
-    public void initFlowRules() {
+    private void initFlowRules() {
         List<FlowRule> rules = new ArrayList<>();
+        
         FlowRule rule = new FlowRule();
-        rule.setResource("checkInventory");
+        rule.setResource("createOrder");
+        // QPS限制
         rule.setGrade(RuleConstant.FLOW_GRADE_QPS);
-        rule.setCount(10);  // 每秒最多10个请求
+        // 每秒允许调用次数
+        rule.setCount(10);
+        
         rules.add(rule);
         FlowRuleManager.loadRules(rules);
     }
 }
 ```
 
-通过该配置，`checkInventory` 方法的访问频率限制为每秒 10 个请求。超出限制时，将触发限流回调方法。
+### 3.3 控制台配置规则
 
-## 5 实现熔断降级
+```json
+{
+    "resource": "createOrder",
+    "limitApp": "default",
+    "grade": 1,
+    "count": 10,
+    "strategy": 0,
+    "controlBehavior": 0,
+    "clusterMode": false
+}
+```
 
-### 5.1 熔断机制
+## 4 熔断降级
 
-熔断机制是通过检测请求的响应时间和失败率来判断是否应该熔断。熔断后，Sentinel 会快速失败，直接返回预定义的回退结果，而不再调用目标服务。熔断恢复后，可以重新尝试调用服务。
-
-**示例：订单服务调用库存服务，使用熔断机制**
+### 4.1 降级规则
 
 ```java
-import com.alibaba.csp.sentinel.annotation.SentinelResource;
-import org.springframework.stereotype.Service;
-
 @Service
-public class OrderService {
-
-    @SentinelResource(value = "placeOrder", fallback = "fallbackPlaceOrder")
-    public String placeOrder(String productId) {
-        // 调用库存服务
-        return inventoryService.checkInventory(productId);
+public class UserService {
+    
+    @SentinelResource(value = "getUserInfo",
+                      fallback = "getUserInfoFallback",
+                      exceptionsToIgnore = {IllegalArgumentException.class})
+    public UserInfo getUserInfo(String userId) {
+        // 远程调用用户服务
+        return remoteUserService.getUser(userId);
     }
-
-    // 熔断后的回退方法
-    public String fallbackPlaceOrder(String productId, Throwable throwable) {
-        return "Order placement failed. Please try again later.";
+    
+    public UserInfo getUserInfoFallback(String userId, Throwable e) {
+        // 返回默认用户信息
+        return new UserInfo();
     }
 }
 ```
 
-在上述代码中，当库存服务调用失败或响应过慢时，Sentinel 会触发熔断，执行 `fallbackPlaceOrder` 回退方法，避免用户长时间等待。
-
-### 5.2 配置熔断规则
-
-熔断规则同样可以通过 Sentinel 控制台进行配置，也可以通过代码设置。以下示例展示了如何为资源配置熔断规则：
+### 4.2 配置降级规则
 
 ```java
-import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
-import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
+private void initDegradeRule() {
+    List<DegradeRule> rules = new ArrayList<>();
+    
+    DegradeRule rule = new DegradeRule();
+    rule.setResource("getUserInfo");
+    // 降级策略，根据异常比例
+    rule.setGrade(RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO);
+    // 异常比例阈值
+    rule.setCount(0.5);
+    // 时间窗口
+    rule.setTimeWindow(10);
+    
+    rules.add(rule);
+    DegradeRuleManager.loadRules(rules);
+}
+```
 
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
+## 5 系统自适应保护
 
-@Service
-public class SentinelDegradeConfig {
+### 5.1 系统规则
 
-    @PostConstruct
-    public void initDegradeRules() {
-        List<DegradeRule> rules = new ArrayList<>();
-        DegradeRule rule = new DegradeRule();
-        rule.setResource("placeOrder");
-        rule.setGrade(RuleConstant.DEGRADE_GRADE_RT);
-        rule.setCount(200);  // 平均响应时间超过200ms时熔断
-        rule.setTimeWindow(10);  // 熔断10秒后尝试恢复
-        rules.add(rule);
-        DegradeRuleManager.loadRules(rules);
+```java
+private void initSystemRule() {
+    List<SystemRule> rules = new ArrayList<>();
+    
+    SystemRule rule = new SystemRule();
+    // 系统load
+    rule.setHighestSystemLoad(3.0);
+    // CPU使用率
+    rule.setHighestCpuUsage(0.8);
+    // 平均RT
+    rule.setAvgRt(1000);
+    // QPS
+    rule.setQps(20);
+    // 线程数
+    rule.setMaxThread(10);
+    
+    rules.add(rule);
+    SystemRuleManager.loadRules(rules);
+}
+```
+
+## 6 规则持久化
+
+### 6.1 Nacos配置
+
+```yaml
+spring:
+  cloud:
+    sentinel:
+      datasource:
+        # 流控规则
+        flow:
+          nacos:
+            server-addr: localhost:8848
+            dataId: ${spring.application.name}-flow-rules
+            groupId: SENTINEL_GROUP
+            rule-type: flow
+        # 降级规则
+        degrade:
+          nacos:
+            server-addr: localhost:8848
+            dataId: ${spring.application.name}-degrade-rules
+            groupId: SENTINEL_GROUP
+            rule-type: degrade
+```
+
+### 6.2 Nacos规则配置
+
+```json
+[
+    {
+        "resource": "createOrder",
+        "limitApp": "default",
+        "grade": 1,
+        "count": 10,
+        "strategy": 0,
+        "controlBehavior": 0,
+        "clusterMode": false
+    }
+]
+```
+
+## 7 集群流控
+
+### 7.1 Token Server配置
+
+```yaml
+spring:
+  cloud:
+    sentinel:
+      transport:
+        dashboard: localhost:8080
+        port: 8719
+      cluster:
+        server:
+          # 启用集群服务端
+          enabled: true
+          # 服务端连接端口
+          port: 11111
+          # 流控规则是否需要持久化
+          persistent: true
+```
+
+### 7.2 Token Client配置
+
+```yaml
+spring:
+  cloud:
+    sentinel:
+      transport:
+        dashboard: localhost:8080
+        port: 8719
+      cluster:
+        client:
+          # 启用集群客户端
+          enabled: true
+          # 服务端地址
+          server-host: localhost
+          # 服务端端口
+          server-port: 11111
+```
+
+## 8 实践案例
+
+### 8.1 接口限流
+
+```java
+@RestController
+@RequestMapping("/api")
+public class OrderController {
+    
+    @GetMapping("/orders")
+    @SentinelResource(value = "getOrders",
+                      blockHandler = "getOrdersBlockHandler",
+                      fallback = "getOrdersFallback")
+    public List<Order> getOrders() {
+        return orderService.findAll();
+    }
+    
+    public List<Order> getOrdersBlockHandler(BlockException ex) {
+        log.warn("接口被限流", ex);
+        return Collections.emptyList();
+    }
+    
+    public List<Order> getOrdersFallback(Throwable e) {
+        log.error("接口异常", e);
+        return Collections.emptyList();
     }
 }
 ```
 
-通过该配置，`placeOrder` 方法的平均响应时间如果超过 200 ms，将触发熔断，熔断时间持续 10 秒后，再次尝试调用服务。
-
-## 6 热点参数限流
-
-Sentinel 提供的**热点参数限流**功能非常适合电商平台中的商品查询、下单等场景。某些商品（如热门商品或促销商品）在短时间内可能会被大量访问，可以通过 Sentinel 的热点限流功能限制特定参数的访问频率。
-
-**示例：基于商品 ID 的热点限流**
+### 8.2 服务熔断
 
 ```java
-import com.alibaba.csp.sentinel.annotation.SentinelResource;
-import org.springframework.stereotype.Service;
-
 @Service
-public class ProductService {
-
-    @SentinelResource(value = "getProductInfo", blockHandler = "handleHotParamLimit")
-    public String getProductInfo(String productId) {
-        // 获取商品信息逻辑
-        return "Product ID: " + productId + " info";
+public class RemoteServiceClient {
+    
+    @SentinelResource(value = "remoteCall",
+                      blockHandler = "remoteCallBlockHandler",
+                      fallback = "remoteCallFallback")
+    public String remoteCall() {
+        return restTemplate.getForObject("http://remote-service/api/data", String.class);
     }
-
-    // 热点限流后的回调方法
-    public String handleHotParamLimit(String productId, BlockException ex) {
-        return "Too many requests for product " + productId + ". Please try again later.";
+    
+    public String remoteCallBlockHandler(BlockException ex) {
+        return "服务被限流";
+    }
+    
+    public String remoteCallFallback(Throwable e) {
+        return "服务降级";
     }
 }
 ```
 
-在此示例中，`getProductInfo` 方法会根据传入的 `productId` 执行限流，当某个特定商品的查询过多时，会触发限流回调。
+### 8.3 热点参数限流
+
+```java
+@RestController
+public class UserController {
+    
+    @GetMapping("/user/{id}")
+    @SentinelResource(value = "getUserById",
+                      blockHandler = "getUserByIdBlockHandler",
+                      fallback = "getUserByIdFallback")
+    public User getUserById(@PathVariable("id") String id) {
+        return userService.getUser(id);
+    }
+    
+    public User getUserByIdBlockHandler(String id, BlockException ex) {
+        return new User();
+    }
+    
+    public User getUserByIdFallback(String id, Throwable e) {
+        return new User();
+    }
+}
+```
+
+## 9 最佳实践
+
+### 9.1 规则配置建议
+
+1. 根据实际业务场景选择合适的规则
+2. 合理设置阈值和时间窗口
+3. 配置降级和熔断规则兜底
+4. 使用动态规则配置
+5. 规则持久化到配置中心
+
+### 9.2 开发建议
+
+1. 合理使用@SentinelResource注解
+2. 实现自定义的BlockHandler和Fallback
+3. 注意异常处理
+4. 监控规则效果
+5. 做好日志记录
+
+### 9.3 运维建议
+
+1. 合理规划集群部署
+2. 监控规则变更
+3. 定期评估规则效果
+4. 做好容量规划
+5. 建立应急预案
+
+## 10 常见问题
+
+### 10.1 整合问题
+
+1. 版本兼容性检查
+2. 依赖冲突解决
+3. 控制台连接问题
+4. 规则持久化异常
+
+### 10.2 使用问题
+
+1. 规则不生效排查
+2. 限流异常处理
+3. 降级策略选择
+4. 集群模式配置
+
+### 10.3 性能问题
+
+1. 规则数量优化
+2. 监控数据处理
+3. 集群流控性能
+4. 规则推送延迟

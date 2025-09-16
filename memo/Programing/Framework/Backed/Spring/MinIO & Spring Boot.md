@@ -75,6 +75,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
   
 @Getter  
 @Setter  
+@EnableConfigurationProperties(MinioProperties.class)
 @ConfigurationProperties(prefix = "minio")  
 public class MinioProperties {  
     private String endpoint;  
@@ -456,7 +457,7 @@ public class CommonMinioController {
    - 两个控制器都进行了详细的日志记录
    - 统一使用中文提示信息,便于维护和排错
 
-## 9 安全性考虑
+## 8 安全性考虑
 
 - 在生产环境中, 确保使用 HTTPS 来保护数据传输。
 - 实现适当的身份验证和授权机制, 以确保只有授权用户可以访问管理员功能。

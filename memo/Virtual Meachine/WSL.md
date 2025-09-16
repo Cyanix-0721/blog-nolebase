@@ -23,20 +23,20 @@
 			- For ARM64 systems: **Version 2004** or later, with **Build 19041** or later.
 		2. or Windows 11.
 
-- 设置 wsl 版本为 2
-
-	```sh
-	wsl --set-version 2
-	```
-
 - 安装&升级
 
 	```shell
-	wsl --install Debian
+	wsl --install -d Debian
 	```
 
 	```shell
 	wsl --update
+	```
+
+- 设置 wsl 版本为 2
+
+	```sh
+	wsl --set-version 2
 	```
 
 - 查看所有 wsl 的版本
@@ -75,17 +75,19 @@ autoProxy = true
 [experimental]
 autoMemoryReclaim = gradual
 sparseVhd = true
+hostAddressLoopback = true
 ```
 
 - `memory = 6GB`：为 WSL2 分配 6GB 内存的限制。
 - `processors = 6`：为 WSL2 分配 6 个处理器核心。
 - `networkingMode = mirrored`：WSL2 的网络模式设为镜像模式，即 WSL2 直接与宿主机的网络堆栈共享 IP 和网络配置。
 - `dnsTunneling = true`：开启 DNS 隧道模式，允许 WSL2 的 DNS 请求通过隧道传递到宿主机。
-- `firewall = true`：启用 WSL2 的防火墙功能。
+- `firewall = true`：启用 Windows 防火墙规则以及特定于 Hyper-V 流量的规则可以筛选 WSL 网络流量。
 - `autoProxy = true`：启用自动代理，WSL2 自动使用宿主机的代理设置。
 - `[experimental]`：实验性功能的设置部分。
   - `autoMemoryReclaim = gradual`：开启渐进式自动内存回收，逐步释放不再使用的内存。
   - `sparseVhd = true`：启用稀疏 VHD 模式，VHD 文件仅使用实际所需的磁盘空间，而不是预分配完整空间。
+  - `hostAddressLoopback = true`：允许容器通过分配给主机的 IP 地址连接到主机，或允许主机通过此方式连接到容器。 始终可以使用 `127.0.0.1` 环回地址，此选项也允许使用所有额外分配的本地 IP 地址。
 
 `etc/wsl.conf`
 

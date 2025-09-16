@@ -39,4 +39,10 @@
 -XX:ErrorFile=$USER_HOME/java_error_in_idea_%p.log  
 # 堆转储文件的位置  
 -XX:HeapDumpPath=$USER_HOME/java_error_in_idea.hprof
+# 启用代码缓存刷新，避免代码缓存溢出  
+-XX:+UseCodeCacheFlushing  
+# 强制使用 IPv4，避免 IPv6 相关问题  
+-Djava.net.preferIPv4Stack=true  
+# 明确设置文件编码为 UTF-8，防止因系统默认编码问题导致的乱码  
+-Dfile.encoding=UTF8
 ```

@@ -179,17 +179,18 @@ tags:
 > 可以使用封装的通用分页类对上述 2 种情况进行统一处理
 >
 > ```java
-> package com.mole.mall.common.api;  
->
-> import com.baomidou.mybatisplus.core.metadata.IPage;
+> package com.mole.persoread.result;  
+>   
 > import com.github.pagehelper.PageInfo;  
+> import lombok.Builder;  
 > import lombok.Data;  
 > import org.springframework.data.domain.Page;  
 >   
 > import java.util.List;  
 >   
 > @Data  
-> public class CommonPage<T> {  
+> @Builder  
+> public class PageResult<T> {  
 >     private Integer pageNum;  
 >     private Integer pageSize;  
 >     private Integer totalPage;  
@@ -199,43 +200,30 @@ tags:
 >     /**  
 >      * 将PageHelper分页后的list转为分页信息  
 >      */  
->     public static <T> CommonPage<T> restPage(List<T> list) {  
->         CommonPage<T> result = new CommonPage<>();  
+>     public static <T> PageResult<T> restPage(List<T> list) {  
 >         PageInfo<T> pageInfo = new PageInfo<>(list);  
->         result.setTotalPage(pageInfo.getPages());  
->         result.setPageNum(pageInfo.getPageNum());  
->         result.setPageSize(pageInfo.getPageSize());  
->         result.setTotal(pageInfo.getTotal());  
->         result.setList(pageInfo.getList());  
->         return result;  
+>         return PageResult.<T>builder()  
+>                 .totalPage(pageInfo.getPages())  
+>                 .pageNum(pageInfo.getPageNum())  
+>                 .pageSize(pageInfo.getPageSize())  
+>                 .total(pageInfo.getTotal())  
+>                 .list(pageInfo.getList())  
+>                 .build();  
 >     }  
 >   
 >     /**  
 >      * 将SpringData分页后的list转为分页信息  
 >      */  
->     public static <T> CommonPage<T> restPage(Page<T> pageInfo) {  
->         CommonPage<T> result = new CommonPage<>();  
->         result.setTotalPage(pageInfo.getTotalPages());  
->         result.setPageNum(pageInfo.getNumber());  
->         result.setPageSize(pageInfo.getSize());  
->         result.setTotal(pageInfo.getTotalElements());  
->         result.setList(pageInfo.getContent());  
->         return result;  
+>     public static <T> PageResult<T> restPage(Page<T> pageInfo) {  
+>         return PageResult.<T>builder()  
+>                 .totalPage(pageInfo.getTotalPages())  
+>                 .pageNum(pageInfo.getNumber())  
+>                 .pageSize(pageInfo.getSize())  
+>                 .total(pageInfo.getTotalElements())  
+>                 .list(pageInfo.getContent())  
+>                 .build();  
 >     }  
 > }
-> 
->	/**  
-> 	 * 将MyBatis-Plus分页后的list转为分页信息  
-> 	 */  
-> 	public static <T> CommonPage<T> restPage(IPage<T> page) {  
-> 	    CommonPage<T> result = new CommonPage<>();  
-> 	    result.setTotalPage((int) page.getPages());  
-> 	    result.setPageNum((int) page.getCurrent());  
-> 	    result.setPageSize((int) page.getSize());  
-> 	    result.setTotal(page.getTotal());  
-> 	    result.setList(page.getRecords());  
-> 	    return result;  
-> 	}
 > ```
 
 ## 9 总结

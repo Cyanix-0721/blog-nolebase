@@ -51,34 +51,101 @@ spring:
 
 #### 1.1.3 创建 Redis 配置类
 
-创建一个 Redis 配置类，以便在 Spring 中使用 Lettuce：
-
 ```java
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
-
-@Configuration
-@EnableCaching
-public class RedisConfig {
-
-    @Bean
-    public RedisConnectionFactory redisConnectionFactory() {
-        return new LettuceConnectionFactory();
-    }
-
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate() {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(redisConnectionFactory());
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-        return template;
-    }
+package com.mole.persoread.common.config;  
+  
+import com.fasterxml.jackson.annotation.JsonAutoDetect;  
+import com.fasterxml.jackson.annotation.PropertyAccessor;  
+import com.fasterxml.jackson.databind.ObjectMapper;  
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;  
+import org.springframework.cache.CacheManager;  
+import org.springframework.context.annotation.Bean;  
+import org.springframework.context.annotation.Configuration;  
+import org.springframework.data.redis.cache.RedisCacheConfiguration;  
+import org.springframework.data.redis.cache.RedisCacheManager;  
+import org.springframework.data.redis.connection.RedisConnectionFactory;  
+import org.springframework.data.redis.core.RedisTemplate;  
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;  
+import org.springframework.data.redis.serializer.RedisSerializer;  
+import org.springframework.data.redis.serializer.StringRedisSerializer;  
+  
+import java.time.Duration;  
+  
+@Configuration  
+public class RedisConfig {  
+  
+    /**  
+     * 配置 RedisTemplate  
+     *     * @param redisConnectionFactory Redis 连接工厂  
+     * @return RedisTemplate 实例  
+     */  
+    @Bean  
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {  
+        // 创建一个 RedisSerializer 对象，用于序列化 Redis 中的值  
+        RedisSerializer<Object> serializer = redisSerializer();  
+  
+        // 创建一个 RedisTemplate 对象，用于执行 Redis 操作  
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();  
+  
+        // 设置 Redis 连接工厂  
+        redisTemplate.setConnectionFactory(redisConnectionFactory);  
+  
+        // 设置键的序列化器为 StringRedisSerializer          
+        redisTemplate.setKeySerializer(new StringRedisSerializer());  
+  
+        // 设置值的序列化器为自定义的 JSON 序列化器  
+        redisTemplate.setValueSerializer(serializer);  
+  
+        // 设置哈希键的序列化器为 StringRedisSerializer        
+        redisTemplate.setHashKeySerializer(new StringRedisSerializer());  
+  
+        // 设置哈希值的序列化器为自定义的 JSON 序列化器  
+        redisTemplate.setHashValueSerializer(serializer);  
+  
+        // 在设置完所有属性后，调用 afterPropertiesSet 方法，确保所有属性都已设置  
+        redisTemplate.afterPropertiesSet();  
+  
+        // 返回配置好的 RedisTemplate 实例  
+        return redisTemplate;  
+    }  
+  
+    /**  
+     * 配置 Redis 序列化器  
+     *  
+     * @return RedisSerializer 实例  
+     */  
+    @Bean  
+    public RedisSerializer<Object> redisSerializer() {  
+  
+        // 创建 ObjectMapper 对象，用于配置 JSON 序列化  
+        ObjectMapper objectMapper = new ObjectMapper();  
+  
+        // 设置所有访问权限的可见性  
+        objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);  
+  
+        // 启用默认类型，必须设置，否则无法将 JSON 转化为对象，会转化成 Map 类型  
+        objectMapper.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL);  
+  
+        // 创建 JSON 序列化器, 将配置好的 ObjectMapper 设置到 JSON 序列化器中  
+        return new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);  
+    }  
+  
+    /**  
+     * 配置 Redis 缓存管理器  
+     *  
+     * @param redisConnectionFactory Redis 连接工厂  
+     * @return RedisCacheManager 实例  
+     */  
+    @Bean  
+    public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {  
+        RedisCacheConfiguration cacheConfig = RedisCacheConfiguration.defaultCacheConfig()  
+                .entryTtl(Duration.ofDays(1)) // 设置缓存过期时间  
+                .disableCachingNullValues();  
+  
+        return RedisCacheManager.builder(redisConnectionFactory)  
+                .cacheDefaults(cacheConfig)  
+                .build();  
+    }  
 }
 ```
 
@@ -124,87 +191,4 @@ public class RedisService {
 | `@Caching`       | 组合多个缓存操作注解（如 `@Cacheable`、`@CachePut`、`@CacheEvict`），用于复杂的缓存逻辑。 |
 | `@CacheConfig`   | 类级别注解，用于配置共享的缓存名称和其他缓存配置。                                       |
 
-##### 1.1.5.1 `@Cacheable`
-
-```java
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Service;
-
-@Service
-public class UserService {
-    @Cacheable(value = "users", key = "#userId")
-    public User getUserById(String userId) {
-        // 模拟从数据库获取用户信息
-        return new User(userId, "John Doe");
-    }
-}
-```
-
-##### 1.1.5.2 `@CachePut`
-
-```java
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.stereotype.Service;
-
-@Service
-public class UserService {
-    @CachePut(value = "users", key = "#user.id")
-    public User updateUser(User user) {
-        // 更新用户信息
-        return user;
-    }
-}
-```
-
-##### 1.1.5.3 `@CacheEvict`
-
-```java
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.stereotype.Service;
-
-@Service
-public class UserService {
-    @CacheEvict(value = "users", key = "#userId")
-    public void deleteUserById(String userId) {
-        // 删除用户信息
-    }
-}
-```
-
-##### 1.1.5.4 `@Caching`
-
-```java
-import org.springframework.cache.annotation.Caching;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.stereotype.Service;
-
-@Service
-public class UserService {
-    @Caching(
-        cacheable = { @Cacheable(value = "users", key = "#userId") },
-        put = { @CachePut(value = "users", key = "#result.id") }
-    )
-    public User getUserById(String userId) {
-        // 模拟从数据库获取用户信息
-        return new User(userId, "John Doe");
-    }
-}
-```
-
-##### 1.1.5.5 `@CacheConfig`
-
-```java
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Service;
-
-@Service
-@CacheConfig(cacheNames = "users")
-public class UserService {
-    @Cacheable(key = "#userId")
-    public User getUserById(String userId) {
-        // 模拟从数据库获取用户信息
-        return new User(userId, "John Doe");
-    }
-}```
+#### 1.1.6 ![[Spring Cache]]

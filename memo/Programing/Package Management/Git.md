@@ -58,13 +58,13 @@ cd package_name
 
 ### 2.5 Run the Software's Installation Script or just Make Install
 
-```
-./install. sh
+```shell
+./install.sh
 ```
 
 Or
 
-```bash
+```shell
 [sudo] make install
 ```
 

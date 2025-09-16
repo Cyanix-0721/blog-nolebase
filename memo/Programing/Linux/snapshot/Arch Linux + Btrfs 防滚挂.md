@@ -74,20 +74,25 @@ sudo pacman -S btrbk
 
 - **基本配置示例**：
 
-  ```bash
-  snapshot_dir = /mnt/snapshots                # 存放快照的目录
-  target = /mnt/backups                        # 本地或远程备份目标
-  
-  volume /                                    # 指定要管理的卷
-      snapshot create = daily                 # 每日快照
-      snapshot create = hourly                # 每小时快照
-      snapshot keep = 10d                     # 保留10天的快照
-      snapshot keep = 24h                     # 保留24小时的快照
-      snapshot keep = 12m                     # 保留12个月的快照
-  ```
+```bash
+# 基本设置
+timestamp_format        long
+transaction_log         /var/log/btrbk.log
+snapshot_dir            /.snapshots
 
-  - `snapshot create` 指定快照的创建频率（如 `hourly`、`daily`）。
-  - `snapshot keep` 指定保留多长时间的快照。
+# 根卷配置
+volume /
+  # 本地快照保留策略
+  snapshot_preserve_min   2d
+  snapshot_preserve       14d
+  
+  # 备份目标配置
+  target /mnt/backup
+    subvolume /
+    # 备份保留策略 - 保留2个月份的备份
+    target_preserve_min   no
+    target_preserve       2m
+```
 
 ### 3.3 运行 Btrbk
 
