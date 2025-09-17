@@ -81,7 +81,7 @@ tags:
 >   - **访问控制**: 通过指定 `permissions`，可以精确控制 `GITHUB_TOKEN` 允许的操作，如读取、写入、创建和删除等。
 >   - **默认权限**: 如果未显式设置 `permissions`，默认情况下，`GITHUB_TOKEN` 拥有基本的权限，如推送代码和创建合并请求。
 >   - **配置示例**:
->
+> 
 > 	```yaml
 >     permissions:
 >       contents: write  # 允许写入仓库内容
