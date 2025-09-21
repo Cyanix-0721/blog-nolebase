@@ -475,7 +475,9 @@ bin/
 
 ## 5 Git 密钥鉴权
 
-### 5.1 启用凭证助手
+### 5.1 HTTPS
+
+#### 5.1.1 启用凭证助手
 
 > [!tip] `git-credential-manager`  
 > Git 2.29 及更高版本内置的凭证助手，安全性高。  
@@ -487,7 +489,7 @@ bin/
 git config --global credential.helper manager
 ```
 
-### 5.2 HTTPS Token 验证
+#### 5.1.2 HTTPS Token 验证
 
 1. **生成 Personal Access Token (PAT):**
    - 登录您的 Git 托管平台（如 GitHub、GitLab、Bitbucket 等）。
@@ -500,42 +502,6 @@ git config --global credential.helper manager
    - 在用户名处输入您的 Git 用户名。
    - 在密码处粘贴您生成的 PAT。
 
-### 5.3 SSH 密钥验证
+### 5.2 SSH 密钥验证
 
-1. **生成 SSH 密钥对：**
-	- 打开终端或命令提示符。
-	- 运行以下命令：
-
-		```bash
-		ssh-keygen -t ed25519 -C "your_email@example.com"
-		```
-
-	 - `-t ed25519` 指定使用更安全的 Ed25519 算法。
-	 - `-C "your_email@example.com"` 添加您的电子邮件地址作为注释（可选）。
-   - 按提示输入密钥文件保存路径和密码（可选）。
-   - 生成完成后，您将在指定路径下找到两个文件：
-	 - `id_ed25519`：私钥，妥善保管，切勿泄露。
-	 - `id_ed25519.pub`：公钥，需要添加到 Git 托管平台。
-
-2. **添加 SSH 公钥到 Git 托管平台：**
-	- 登录您的 Git 托管平台。
-	- 在设置中找到 "SSH Keys" 或类似选项。
-	- 点击 "Add SSH Key" 或类似按钮。
-	- 将 `id_ed25519.pub` 文件的内容复制粘贴到 "Key" 文本框中。
-	- 输入一个标题（Title）来标识这个密钥。
-	- 点击 "Add Key" 或类似按钮保存。
-
-3. **使用 SSH 进行身份验证：**
-	- 将 Git 仓库的远程地址改为 SSH 形式。例如：
-
-	 ```bash
-     git remote set-url origin git@github.com:username/repo.git
-     ```
-
-	- 当您通过 SSH 克隆或推送代码时，Git 会自动使用您的 SSH 密钥进行身份验证。
-
-4. **临时指定密钥：**
-
-	```bash
-	git <command> -i <path/to/private_key>
-	```
+![SSH 密钥验证](SSH)

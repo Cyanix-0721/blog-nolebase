@@ -130,7 +130,29 @@ Host *
 > - `AddKeysToAgent yes` 会自动将使用的密钥添加到 SSH Agent
 > - 可以为同一服务的不同账户创建不同配置块
 
-## 6 测试连接
+## 6 确保 SSH Agent 运行
+
+### 6.1 确保 SSH 配置正确
+
+您的 `~/.ssh/config` 应该包含：
+
+```config
+Host *
+  AddKeysToAgent yes
+```
+
+### 6.2 简化 Fish Shell 配置
+
+在 `~/.config/fish/config.fish` 中添加以下内容：
+
+```fish
+# 启动 SSH Agent（如果尚未运行）
+if not set -q SSH_AUTH_SOCK
+  eval (ssh-agent -c | sed 's/^setenv/set -gx/')
+end
+```
+
+## 7 测试连接
 
 测试 GitHub 连接：
 
@@ -146,27 +168,66 @@ ssh -T git@gitlab.company.com
 
 成功时会显示相应的欢迎信息。
 
-## 7 故障排除
+## 8 故障排除
 
-### 7.1 验证 SSH Agent
+### 8.1 验证 SSH Agent
 
 ```bash
 # 查看已加载的密钥
 ssh-add -l
 ```
 
-### 7.2 调试连接问题
+### 8.2 调试连接问题
 
 ```bash
 # 使用详细模式查看连接过程
 ssh -T -v git@github.com
 ```
 
-### 7.3 检查文件权限
+### 8.3 检查文件权限
 
-确保密钥文件权限正确：
+|文件/目录|推荐权限|说明|
+|---|---|---|
+|`~/.ssh`|`700` (drwx------)|只有所有者可以读、写、执行|
+|`~/.ssh/authorized_keys`|`600` (-rw-------)|只有所有者可以读写|
+|`~/.ssh/id_ed25519_github` (私钥)|`600` (-rw-------)|只有所有者可以读写|
+|`~/.ssh/id_ed25519_github.pub` (公钥)|`644` (-rw-r--r--)|所有者可读写，其他人只读|
+|`~/.ssh/known_hosts`|`644` (-rw-r--r--)|所有者可读写，其他人只读|
+|`~/.ssh/config`|`600` (-rw-------) 或 `644`|建议 `600` 以提高安全性|
 
-```bash
+#### 8.3.1 一键设置所有权限的脚本
+
+```sh
+#!/bin/bash
+
+# 设置 SSH 目录和文件权限
+echo "设置 SSH 目录和文件权限…"
+
+# 设置 .ssh 目录权限
 chmod 700 ~/.ssh
-chmod 600 ~/.ssh/*
+
+# 设置所有私钥文件权限为 600
+find ~/.ssh -type f -name "*" -exec chmod 600 {} \; 2>/dev/null
+
+# 设置公钥文件权限为 644
+find ~/.ssh -type f -name "*.pub" -exec chmod 644 {} \; 2>/dev/null
+
+# 设置 known_hosts 权限为 644
+if [ -f ~/.ssh/known_hosts ]; then
+    chmod 644 ~/.ssh/known_hosts
+fi
+
+# 设置 config 权限为 600（如果存在）
+if [ -f ~/.ssh/config ]; then
+    chmod 600 ~/.ssh/config
+fi
+
+echo "权限设置完成。"
+```
+
+将上述内容保存为 `fix-ssh-permissions.sh`，然后运行：
+
+```sh
+chmod +x fix-ssh-permissions.sh
+./fix-ssh-permissions.sh
 ```
