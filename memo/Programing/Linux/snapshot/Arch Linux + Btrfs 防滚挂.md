@@ -20,21 +20,7 @@ Btrfs 支持内置的快照功能，可以在系统更新前创建快照，以�
   这会在 `/mnt/@snapshot` 目录下创建一个当前根分区的快照。
 
 - **自动快照**：  
-  可以使用 `snapper` 或 `btrbk` 等工具来自动管理快照。
-  - **Snapper**：配置后可以在每次 `pacman` 更新前自动创建快照。  
-	安装 `snapper`：
-
-	```bash
-    sudo pacman -S snapper
-    ```
-
-	配置 snapper 后，可以在每次更新前自动创建快照：
-
-	```bash
-    sudo snapper -c root create -d "Pre-update snapshot"
-    ```
-
-  - [[#3 Btrbk 详细配置与使用|btrbk]]：更灵活的 Btrfs 快照与备份管理工具，支持本地和远程备份（详细配置见下文）。
+  可以使用 [[#3 Snapper 详细配置与使用|snapper]] 或 [[#4 Btrbk 详细配置与使用|btrbk]] 等工具来自动管理快照。
 
 ### 2.2 系统分区和数据分区分离
 
@@ -56,11 +42,129 @@ Btrfs 支持内置的快照功能，可以在系统更新前创建快照，以�
 
 对于生产环境或需要高稳定性的系统，考虑使用 `linux-lts` 内核包，该内核相对较少地更新，并且更稳定。
 
-## 3 Btrbk 详细配置与使用
+## 3 Snapper 详细配置与使用
+
+Snapper 是另一个强大的 Btrfs 快照管理工具，由 openSUSE 团队开发，被广泛用于管理 Btrfs 子卷的快照。它可以与 `pacman` 钩子集成，在系统更新前后自动创建快照。
+
+### 3.1 安装 Snapper
+
+安装 `snapper` 以及可选的 GUI 支持工具：
+
+> [!info] Btrfs-Assistant：Snapper 的图形化界面
+>
+> `btrfs-assistant` 是一个图形化工具，提供了对 Btrfs 文件系统和 Snapper 快照的直观管理。
+
+```bash
+sudo pacman -S snapper btrfs-assistant
+```
+
+### 3.2 配置 Snapper
+
+1. **创建配置**：
+
+   首先，你需要为要管理的 Btrfs 子卷创建一个 Snapper 配置。例如，为根目录创建配置：
+
+   ```bash
+   sudo snapper -c root create-config /
+   ```
+
+   这会在 `/etc/snapper/configs/` 目录下创建名为 `root` 的配置文件。
+
+2. **编辑配置文件**：
+
+   配置文件位于 `/etc/snapper/configs/root`。以下是一些关键配置选项：
+
+   ```bash
+   # 快照保存的目录
+   SNAPPER_CONFIGS="/etc/snapper/configs"
+
+   # 设置快照的子卷路径（通常是根目录）
+   SUBVOLUME="/"
+
+   # 保留策略：每小时快照保留数量
+   NUMBER_LIMIT="10"
+   NUMBER_LIMIT_IMPORTANT="5"
+
+   # 时间保留策略：保留最近10个快照，重要快照保留5个
+   TIMELINE_CREATE="yes"
+   TIMELINE_CLEANUP="yes"
+   TIMELINE_LIMIT_HOURLY="5"
+   TIMELINE_LIMIT_DAILY="7"
+   TIMELINE_LIMIT_WEEKLY="2"
+   TIMELINE_LIMIT_MONTHLY="1"
+   TIMELINE_LIMIT_YEARLY="0"
+   ```
+
+3. **调整权限**：
+
+   默认情况下，Snapper 创建的快照目录可能只有 root 可读。为了让普通用户能够访问快照，可以调整权限：
+
+   ```bash
+   sudo chmod a+rx /.snapshots
+   sudo chown :users /.snapshots
+   ```
+
+### 3.3 自动创建快照
+
+Snapper 可以与 `pacman` 集成，在系统更新前后自动创建快照：
+
+1. **安装 `snapper-support`**：
+
+   ```bash
+   paru -S snapper-support
+   ```
+
+   这个包提供了 `pacman` 钩子，可以在执行 `pacman` 事务（如安装、更新或删除软件包）前后自动触发 Snapper 创建快照。
+
+2. **启用 `snapper-boot` 服务**：
+
+   为了在系统启动时创建启动快照，启用以下服务：
+
+   ```bash
+   sudo systemctl enable snapper-boot.timer
+   sudo systemctl start snapper-boot.timer
+   ```
+
+3. **启用时间线快照**：
+
+   Snapper 可以按时间线自动创建快照（每小时、每天等）。启用时间线计时器：
+
+   ```bash
+   sudo systemctl enable snapper-timeline.timer
+   sudo systemctl start snapper-timeline.timer
+   ```
+
+### 3.4 使用 Snapper 管理快照
+
+- **列出快照**：
+
+  ```bash
+  sudo snapper -c root list
+  ```
+
+- **创建手动快照**：
+
+  ```bash
+  sudo snapper -c root create -d "手动快照描述"
+  ```
+
+- **删除快照**：
+
+  ```bash
+  sudo snapper -c root delete <快照ID>
+  ```
+
+- **比较快照差异**：
+
+  ```bash
+  sudo snapper -c root status <快照ID1>..<快照ID2>
+  ```
+
+## 4 Btrbk 详细配置与使用
 
 `btrbk` 是一个强大的工具，用于自动化 Btrfs 快照管理和备份。它可以定期创建和删除快照，支持本地和远程备份。
 
-### 3.1 安装 Btrbk
+### 4.1 安装 Btrbk
 
 首先，安装 `btrbk`：
 
@@ -68,7 +172,7 @@ Btrfs 支持内置的快照功能，可以在系统更新前创建快照，以�
 sudo pacman -S btrbk
 ```
 
-### 3.2 配置 Btrbk
+### 4.2 配置 Btrbk
 
 - **配置文件位置**：`/etc/btrbk/btrbk.conf`
 
@@ -94,7 +198,7 @@ volume /
     target_preserve       2m
 ```
 
-### 3.3 运行 Btrbk
+### 4.3 运行 Btrbk
 
 - **手动运行快照创建**：
 
@@ -119,7 +223,7 @@ volume /
 
   这将在每天凌晨 2 点运行 `btrbk`。
 
-### 3.4 备份快照到远程
+### 4.4 备份快照到远程
 
 btrbk 还支持将快照备份到远程服务器：
 
@@ -145,7 +249,7 @@ btrbk 还支持将快照备份到远程服务器：
 
   然后，`btrbk` 将能够在没有密码提示的情况下备份到远程服务器。
 
-### 3.5 Btrbk 的高级功能
+### 4.5 Btrbk 的高级功能
 
 - **压缩和加密**：你可以配置 `btrbk` 在备份时启用压缩和加密。
 - **多目标备份**：btrbk 支持同时备份到多个目标，包括本地和远程。

@@ -158,16 +158,88 @@ Pacman -Scc
 
 ### 2.1 Official Repo
 
-#### 2.1.1 Install Reflector
+#### 2.1.1 安装 Reflector
+
+在 Arch Linux 上，使用 pacman 包管理器安装 `reflector`：
 
 ```bash
 sudo pacman -S reflector
 ```
 
-#### 2.1.2 Update
+#### 2.1.2 备份当前镜像列表
+
+在进行任何更改之前，建议备份您当前的镜像列表文件 (`/etc/pacman.d/mirrorlist`)：
 
 ```bash
-sudo reflector --sort rate --limit 10 --protocol https --save /etc/pacman.d/mirrorlist
+sudo cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+```
+
+#### 2.1.3 使用 Reflector 生成优化的镜像列表
+
+您可以通过 `reflector` 命令指定筛选条件来生成优化的镜像列表。
+
+**命令示例：**
+
+```sh
+sudo reflector --verbose \
+  -c 'China,Hong Kong,Taiwan,Japan,United States' \
+  -p https \
+  -l 40 \
+  -a 24 \
+  --save /etc/pacman.d/mirrorlist
+```
+
+#### 2.1.4 验证生成的镜像列表
+
+命令执行完成后，建议查看一下新生成的镜像列表，确认是否符合预期：
+
+```sh
+cat /etc/pacman.d/mirrorlist
+```
+
+#### 2.1.5 更新 Pacman 数据库
+
+更新了镜像列表后，需要刷新 Pacman 的数据库，以确保它使用新的镜像源来获取软件包信息：
+
+```sh
+sudo pacman -Syy
+```
+
+#### 2.1.6 配置 Systemd 定时任务
+
+**创建 Reflector 服务文件**：  
+创建 `/etc/systemd/system/reflector.service` 文件，内容如下：
+
+```ini
+[Unit]
+Description=Pacman mirrorlist update with Reflector
+
+[Service]
+Type=oneshot
+
+ExecStart=/usr/bin/reflector -c 'China,Hong Kong,Taiwan,Japan,United States' -p https -l 40 -a 24 --save /etc/pacman.d/mirrorlist
+```
+
+**创建 Reflector 定时器文件**：  
+创建 `/etc/systemd/system/reflector.timer` 文件，内容如下：
+
+```ini
+[Unit]
+Description=Run reflector weekly to update mirrorlist
+
+[Timer]
+OnCalendar=weekly  # 每周触发一次
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+**启用并启动定时器**：  
+
+```bash
+sudo systemctl enable reflector.timer
+sudo systemctl start reflector.timer
 ```
 
 ### 2.2 ArchLinuxCN
@@ -175,8 +247,10 @@ sudo reflector --sort rate --limit 10 --protocol https --save /etc/pacman.d/mirr
 #### 2.2.1 在 `/etc/pacman.conf` 文件末尾添加以下两行（或者从后边的链接中选择一个镜像）[Arch Linux CN Community repo mirrors list](https://github.com/archlinuxcn/mirrorlist-repo)
 
 ```
-[archlinuxcn]
+
+[archlinuxcn]  
 Server = https://repo.archlinuxcn.org/$arch
+
 ```
 
 #### 2.2.2 之后通过以下命令安装 `archlinuxcn-keyring` 包导入 GPG Key

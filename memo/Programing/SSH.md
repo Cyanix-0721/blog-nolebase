@@ -146,9 +146,9 @@ Host *
 在 `~/.config/fish/config.fish` 中添加以下内容：
 
 ```fish
-# 启动 SSH Agent（如果尚未运行）
+# 使用临时文件静默启动
 if not set -q SSH_AUTH_SOCK
-  eval (ssh-agent -c | sed 's/^setenv/set -gx/')
+  ssh-agent -c | sed 's/^setenv/set -gx/' | source > /dev/null 2>&1
 end
 ```
 
