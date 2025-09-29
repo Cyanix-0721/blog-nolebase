@@ -73,6 +73,7 @@ alias pk='ps aux | fzf | awk "{print \$2}" | xargs kill -9'
 ```bash
 eval "$(zoxide init bash)"
 # 对于 zsh: eval "$(zoxide init zsh)"
+# 对于 fish: zoxide init fish | source
 ```
 
 #### 2.2.2 基本命令

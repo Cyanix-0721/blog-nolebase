@@ -30,7 +30,7 @@ After executing `locale-gen`, the selected locales can be used in the system. Yo
 #### 1.2.1 Install Fonts
 
 ```bash
-sudo pacman -S adobe-source-han-sans-cn-fonts adobe-source-han-serif-cn-fonts noto-fonts-cjk wqy-microhei wqy-microhei-lite wqy-bitmapfont wqy-zenhei ttf-arphic-ukai ttf-arphic-uming ttf-jetbrains-mono ttf-jetbrains-mono-nerd ttf-sarasa-gothic
+sudo pacman -S adobe-source-han-sans-cn-fonts adobe-source-han-serif-cn-fonts noto-fonts-cjk noto-fonts-emoji wqy-microhei wqy-microhei-lite wqy-bitmapfont wqy-zenhei ttf-arphic-ukai ttf-arphic-uming ttf-jetbrains-mono ttf-jetbrains-mono-nerd ttf-sarasa-gothic
 ```
 
 #### 1.2.2 Fontconfig
@@ -73,6 +73,7 @@ modify or create `~/.config/fontconfig/fonts.conf`
             <family>Source Han Sans CN</family>
             <family>Noto Sans CJK SC</family>
             <family>WenQuanYi Micro Hei</family>
+            <family>Noto Color Emoji</family>
         </prefer>
     </alias>
 
@@ -82,6 +83,7 @@ modify or create `~/.config/fontconfig/fonts.conf`
             <family>Source Han Serif CN</family>
             <family>Noto Serif CJK SC</family>
             <family>AR PL UMing CN</family>
+            <family>Noto Color Emoji</family>
         </prefer>
     </alias>
 
@@ -91,6 +93,7 @@ modify or create `~/.config/fontconfig/fonts.conf`
             <family>JetBrainsMono Nerd Font</family> <!-- 英文优先 -->
             <family>Sarasa Gothic</family> <!-- 中文优先 -->
             <family>Noto Sans Mono CJK SC</family>
+            <family>Noto Color Emoji</family>
         </prefer>
     </alias>
 
@@ -144,7 +147,7 @@ fc-cache -fv
 ### 2.1 Install
 
 ```bash
-sudo pacman -S fcitx5-im fcitx5-rime
+sudo pacman -S fcitx5-im fcitx5-rime fcitx5-chinese-addons
 ```
 
 要获取更好的体验，你可以根据需要安装以下模块。即使不安装，输入法在大部分的应用程序中仍可能正常工作，但你可能会遇到输入法挂起、预览窗口位置错误或没有预览的问题。
@@ -160,16 +163,15 @@ sudo pacman -S fcitx5-im fcitx5-rime
 
 ### 2.2 Usage
 
-- 安装 [fcitx5-input-support](https://aur.archlinux.org/packages/fcitx5-input-support/) <sup>AUR</sup>
 - 或者编辑 `/etc/environment` 并添加以下几行，然后重新登录 [Setup Fcitx 5](https://fcitx-im.org/wiki/Setup_Fcitx_5#Environment_variables) ：
 
 ```
-GTK_IM_MODULE=fcitx
-QT_IM_MODULE=fcitx
-XMODIFIERS=@im=fcitx
-SDL_IM_MODULE=fcitx
-INPUT_METHOD=fcitx
-GLFW_IM_MODULE=fcitx
+# 基于 GTK 的程序使用 fcitx5 作为输入法引擎
+export GTK_IM_MODULE=fcitx5
+# 基于 Qt 的程序使用 fcitx5 作为输入法引擎
+export QT_IM_MODULE=fcitx5
+# X系统层面的输入法设置,设置为 fcitx5,使所有 X 程序都使用 fcitx5
+export XMODIFIERS=@im=fcitx5
 ```
 
 ### 2.3 Configure
