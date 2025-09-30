@@ -163,7 +163,7 @@ sudo pacman -S fcitx5-im fcitx5-rime fcitx5-chinese-addons
 
 ### 2.2 Usage
 
-- 或者编辑 `/etc/environment` 并添加以下几行，然后重新登录 [Setup Fcitx 5](https://fcitx-im.org/wiki/Setup_Fcitx_5#Environment_variables) ：
+- 编辑 `/etc/environment` 并添加以下几行，然后重新登录 [Setup Fcitx 5](https://fcitx-im.org/wiki/Setup_Fcitx_5#Environment_variables) ：
 
 ```
 # 基于 GTK 的程序使用 fcitx5 作为输入法引擎

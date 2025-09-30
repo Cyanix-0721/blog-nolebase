@@ -244,13 +244,6 @@ sudo systemctl start reflector.timer
 
 ### 2.2 ArchLinuxCN
 
-#### 2.2.1 在 `/etc/pacman.conf` 文件末尾添加以下两行（或者从后边的链接中选择一个镜像）[Arch Linux CN Community repo mirrors list](https://github.com/archlinuxcn/mirrorlist-repo)
-
-```
-
-[archlinuxcn]  
-Server = https://repo.archlinuxcn.org/$arch
-
 ```
 
 #### 2.2.2 之后通过以下命令安装 `archlinuxcn-keyring` 包导入 GPG Key
@@ -259,7 +252,7 @@ Server = https://repo.archlinuxcn.org/$arch
 sudo pacman -Sy archlinuxcn-keyring
 ```
 
-##### 2.2.2.1 如果报错密钥过时，需要在本地信任 Farseerfc 的 GPG Key
+#### 2.2.1 如果报错密钥过时，需要在本地信任 Farseerfc 的 GPG Key
 
 ```bash
 sudo pacman-key --lsign-key "farseerfc@archlinux.org"
