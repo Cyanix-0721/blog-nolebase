@@ -473,11 +473,67 @@ bin/
 .DS_Store
 ```
 
-## 5 Git 密钥鉴权
+## 5 统一换行符
 
-### 5.1 HTTPS
+### 5.1 **为什么要统一换行符？**
 
-#### 5.1.1 启用凭证助手
+1. **跨平台一致性**：
+   - Windows 默认使用 `CRLF`（`\r\n`）。
+   - Linux/macOS 默认使用 `LF`（`\n`）。
+   - 如果不统一，可能导致文件在不同系统上显示换行符不一致，甚至引发编译或执行错误。
+
+2. **避免不必要的变更**：
+   - 如果换行符不统一，Git 可能会将换行符变化识别为文件修改，导致提交历史混乱。
+
+### 5.2 **如何通过 Git 设置自动转换**
+
+#### 5.2.1 **全局设置**
+
+   ```bash
+   # 提交时转换为 LF，检出时不转换（适用于 Linux/macOS 用户）
+   git config --global core.autocrlf input
+
+   # 提交时转换为 LF，检出时转换为 CRLF（适用于 Windows 用户）
+   git config --global core.autocrlf true
+   ```
+
+#### 5.2.2 **针对单个项目设置**
+
+   在项目根目录的 `.gitattributes` 文件中指定规则：
+
+   ```gitattributes
+   # 所有文件统一使用 LF，不自动转换
+   * text=auto eol=lf
+
+   # 针对特定文件类型设置
+   *.sh text eol=lf
+   *.bat text eol=crlf
+   ```
+
+### 5.3 **其他注意事项**
+
+1. **二进制文件**：
+   - 确保二进制文件（如图片、压缩包）不被转换，否则会损坏文件。
+   - 在 `.gitattributes` 中标记二进制文件：
+
+     ```gitattributes
+     *.png binary
+     *.jpg binary
+     ```
+
+2. **现有仓库的清理**：
+   - 如果仓库中已有换行符混乱的问题，可以通过以下命令清理：
+
+     ```bash
+     git rm --cached -r .
+     git reset --hard
+     ```
+
+## 6 Git 密钥鉴权
+
+### 6.1 HTTPS
+
+#### 6.1.1 启用凭证助手
 
 > [!tip] `git-credential-manager`  
 > Git 2.29 及更高版本内置的凭证助手，安全性高。  
@@ -489,7 +545,7 @@ bin/
 git config --global credential.helper manager
 ```
 
-#### 5.1.2 HTTPS Token 验证
+#### 6.1.2 HTTPS Token 验证
 
 1. **生成 Personal Access Token (PAT):**
    - 登录您的 Git 托管平台（如 GitHub、GitLab、Bitbucket 等）。
@@ -502,6 +558,6 @@ git config --global credential.helper manager
    - 在用户名处输入您的 Git 用户名。
    - 在密码处粘贴您生成的 PAT。
 
-### 5.2 SSH 密钥验证
+### 6.2 SSH 密钥验证
 
 ![SSH 密钥验证](SSH)

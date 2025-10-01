@@ -4,11 +4,15 @@
 
 ### 1.1 安装 Git 和基础开发工具
 
+> [[memo/Programing/Version Control/Git/Git|Git]]
+
 ```bash
 sudo pacman -S --needed git base-devel
 ```
 
 ### 1.2 安装 Paru (推荐)
+
+> [[Paru]]
 
 ```bash
 git clone https://aur.archlinux.org/paru.git
@@ -38,28 +42,11 @@ sudo pacman -S pacman-contrib reflector
 
 ### 2.2 配置 ArchlinuxCN 仓库
 
-#### 2.2.1 导入 GPG 密钥
-
-```bash
-sudo pacman-key --lsign-key "farseerfc@archlinux.org"
-```
-
-#### 2.2.2 添加 ArchlinuxCN 仓库
-
-在 `/etc/pacman.conf` 文件末尾添加以下内容：
-
-```ini
-[archlinuxcn]
-Server = https://repo.archlinuxcn.org/$arch
-```
-
-#### 2.2.3 更新并安装密钥环
-
-```bash
-sudo pacman -Sy archlinuxcn-keyring
-```
+ ![[Pacman#2.2 ArchLinuxCN]]
 
 ## 3 安装 Flatpak
+
+> [[Flatpak]]
 
 ```bash
 sudo pacman -S flatpak
@@ -74,12 +61,16 @@ sudo refind-install
 
 ## 5 安装 Chezmoi 并初始化配置
 
+> [[chezmoi]]
+
 ```bash
 sudo pacman -S chezmoi
 chezmoi init https://github.com/Cyanix-0721/dotfiles.git -a
 ```
 
 ## 6 安装备份工具
+
+> [[Arch Linux + Btrfs 防滚挂]]
 
 ```bash
 sudo pacman -S snapper btrfs-assistant
@@ -96,7 +87,7 @@ sudo pacman -S fzf zoxide ripgrep fd eza
 ### 8.1 通过 Pacman 安装
 
 ```bash
-sudo pacman -S obsidian keepassxc vlc mpv 7zip yazi ffmpeg jq poppler resvg imagemagick neovim dex btop
+sudo pacman -S obsidian keepassxc vlc mpv 7zip yazi ffmpeg jq poppler resvg imagemagick neovim dex btop fastfetch github-cli lazygit
 ```
 
 ### 8.2 通过 AUR 安装
@@ -122,26 +113,17 @@ fc-cache -fv
 ### 9.3 安装输入法
 
 ```bash
-sudo pacman -S fcitx5-im fcitx5-rime fcitx5-chinese-addons
+sudo pacman -S fcitx5-im fcitx5-rime fcitx5-chinese-addons rime-wanxiang-pinyin
 ```
 
-### 9.4 配置输入法环境变量
+### 9.4 配置输入法环境变量<sup>Optional</sup>
 
 编辑 `/etc/environment` 并添加以下内容：
 
 ```bash
-# 基于 GTK 的程序使用 fcitx5 作为输入法引擎
-export GTK_IM_MODULE=fcitx5
-# 基于 Qt 的程序使用 fcitx5 作为输入法引擎
-export QT_IM_MODULE=fcitx5
-# X系统层面的输入法设置,设置为 fcitx5,使所有 X 程序都使用 fcitx5
-export XMODIFIERS=@im=fcitx5
-```
-
-### 9.5 安装万象拼音方案
-
-```bash
-sudo pacman -S rime-wanxiang-data rime-wanxiang-dict rime-wanxiang-dict-pinyin rime-wanxiang-gram-zh-hans rime-wanxiang-pinyin
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
 ```
 
 ## 10 一键安装脚本
@@ -173,19 +155,19 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # 显示主菜单
 show_menu() {
     clear
-    echo "=== Arch Linux 快速配置菜单 ==="
-    echo "1. 全部运行 (完整配置)"
-    echo "2. 基础工具和AUR助手"
-    echo "3. ArchlinuxCN仓库配置"
-    echo "4. Flatpak安装"
-    echo "5. rEFInd引导管理器"
-    echo "6. Chezmoi配置管理"
-    echo "7. 备份工具安装"
-    echo "8. 命令行效率工具"
-    echo "9. 常用软件 (Pacman)"
-    echo "10. 常用软件 (AUR)"
-    echo "11. 中文本地化配置"
-    echo "0. 退出"
+    echo "=== Arch Linux 快速配置菜单 / Quick Setup Menu ==="
+    echo "1. 全部运行 / Run All (Complete Setup)"
+    echo "2. 基础工具和AUR助手 / Base Tools & AUR Helper"
+    echo "3. ArchlinuxCN仓库配置 / ArchlinuxCN Repository Setup"
+    echo "4. Flatpak安装 / Flatpak Installation"
+    echo "5. rEFInd引导管理器 / rEFInd Boot Manager"
+    echo "6. Chezmoi配置管理 / Chezmoi Configuration Manager"
+    echo "7. 备份工具安装 / Backup Tools Installation"
+    echo "8. 命令行效率工具 / CLI Efficiency Tools"
+    echo "9. 常用软件 (Pacman) / Common Software (Pacman)"
+    echo "10. 常用软件 (AUR) / Common Software (AUR)"
+    echo "11. 中文本地化配置 / Chinese Localization Setup"
+    echo "0. 退出 / Exit"
     echo ""
 }
 
@@ -195,7 +177,8 @@ run_script() {
     local script_name=""
     
     case $script_num in
-        1) echo "开始完整配置..." ;;
+        0) echo "再见! / Goodbye!"; exit 0 ;;
+        1) echo "开始完整配置… / Starting complete setup…" ;;
         2) script_name="01-base.sh" ;;
         3) script_name="02-archlinuxcn.sh" ;;
         4) script_name="03-flatpak.sh" ;;
@@ -206,27 +189,29 @@ run_script() {
         9) script_name="08-software-pacman.sh" ;;
         10) script_name="09-software-aur.sh" ;;
         11) script_name="10-localization.sh" ;;
-        12) echo "再见!"; exit 0 ;;
-        *) echo "无效选项"; return 1 ;;
+        *) echo "无效选项 / Invalid option"; return 1 ;;
     esac
     
-    if [ "$script_num" -eq 1 ]; then
+    if [ "$script_num" -eq 0 ]; then
+        # 选项 0 是退出，在 case 语句中已经处理
+        return 0
+    elif [ "$script_num" -eq 1 ]; then
         # 运行所有脚本（按数字顺序）
         for script in "$SCRIPT_DIR"/{01,02,03,04,05,06,07,08,09,10}-*.sh; do
             if [ -f "$script" ] && [ -x "$script" ]; then
-                echo "执行: $(basename "$script")"
+                echo "执行: $(basename "$script") / Executing: $(basename "$script")"
                 "$script"
                 echo ""
             fi
         done
-        echo "✓ 所有配置完成!"
+        echo "✓ 所有配置完成! / All configurations completed!"
     elif [ -n "$script_name" ]; then
         local script_path="$SCRIPT_DIR/$script_name"
         if [ -f "$script_path" ] && [ -x "$script_path" ]; then
-            echo "执行: $script_name"
+            echo "执行: $script_name / Executing: $script_name"
             "$script_path"
         else
-            echo "错误: 脚本 $script_name 不存在或不可执行"
+            echo "错误: 脚本 $script_name 不存在或不可执行 / Error: Script $script_name does not exist or is not executable"
             return 1
         fi
     fi
@@ -237,16 +222,15 @@ run_script() {
 # 主循环
 while true; do
     show_menu
-    read -p "请选择操作 [0-11]: " choice
+    read -p "请选择操作 / Please select an option [0-11]: " choice
     
     if run_script "$choice"; then
-        if [ "$choice" -ne 0 ]; then
-            echo ""
-            read -p "按回车键返回主菜单..."
-        fi
+        # 所有成功的选项都需要等待用户按键
+        echo ""
+        read -p "按回车键返回主菜单… / Press Enter to return to main menu…"
     else
-        echo "执行失败，请检查错误信息"
-        read -p "按回车键返回主菜单..."
+        echo "执行失败，请检查错误信息 / Execution failed, please check error messages"
+        read -p "按回车键返回主菜单… / Press Enter to return to main menu…"
     fi
 done
 ```
@@ -390,7 +374,7 @@ echo "=== 安装 Chezmoi 并初始化配置 ==="
 echo "安装 Chezmoi..."
 sudo pacman -S --noconfirm chezmoi
 echo "初始化 dotfiles 配置..."
-chezmoi init https://github.com/Cyanix-0721/com.cyanix.dotfiles.git -a
+chezmoi init https://github.com/Cyanix-0721/dotfiles.git -a
 echo "✓ Chezmoi 安装和初始化完成"
 ```
 
@@ -435,7 +419,7 @@ echo "=== 安装常用软件 (Pacman) ==="
 
 # 安装常用软件 (Pacman)
 echo "安装常用软件 (Pacman)..."
-sudo pacman -S --noconfirm obsidian keepassxc vlc mpv 7zip yazi ffmpeg jq poppler resvg imagemagick neovim dex btop
+sudo pacman -S --noconfirm obsidian keepassxc vlc mpv 7zip yazi ffmpeg jq poppler resvg imagemagick neovim dex btop fastfetch github-cli lazygit
 echo "✓ 常用软件 (Pacman) 安装完成"
 ```
 
@@ -470,35 +454,38 @@ set -e
 echo "=== 中文本地化配置 ==="
 
 # 安装中文字体
-echo "安装中文字体..."
+echo "安装中文字体…"
 sudo pacman -S --noconfirm adobe-source-han-sans-cn-fonts adobe-source-han-serif-cn-fonts noto-fonts-cjk noto-fonts-emoji wqy-microhei wqy-microhei-lite wqy-bitmapfont wqy-zenhei ttf-arphic-ukai ttf-arphic-uming ttf-jetbrains-mono ttf-jetbrains-mono-nerd ttf-sarasa-gothic
 echo "✓ 中文字体安装完成"
 
 # 清除字体缓存
-echo "清除字体缓存..."
+echo "清除字体缓存…"
 fc-cache -fv
 echo "✓ 字体缓存清除完成"
 
 # 安装输入法
-echo "安装输入法..."
-sudo pacman -S --noconfirm fcitx5-im fcitx5-rime fcitx5-chinese-addons
+echo "安装输入法…"
+sudo pacman -S --noconfirm fcitx5-im fcitx5-rime fcitx5-chinese-addons rime-wanxiang-pinyin
 echo "✓ 输入法安装完成"
 
-# 配置输入法环境变量
-echo "配置输入法环境变量..."
-if ! sudo grep -q "GTK_IM_MODULE=fcitx5" /etc/environment; then
-    echo -e "\n# 输入法配置\nexport GTK_IM_MODULE=fcitx5\nexport QT_IM_MODULE=fcitx5\nexport XMODIFIERS=@im=fcitx5" | sudo tee -a /etc/environment > /dev/null
-    echo "✓ 输入法环境变量配置完成"
+# 配置输入法环境变量（可选）
+echo "是否配置输入法环境变量？(y/N)"
+read -r configure_im
+
+if [[ "$configure_im" =~ ^[Yy]$ ]]; then
+    echo "配置输入法环境变量…"
+    if ! sudo grep -q "GTK_IM_MODULE=fcitx" /etc/environment; then
+        echo -e "\nexport GTK_IM_MODULE=fcitx\nexport QT_IM_MODULE=fcitx\nexport XMODIFIERS=@im=fcitx" | sudo tee -a /etc/environment > /dev/null
+        echo "✓ 输入法环境变量配置完成"
+        echo "注意：需要重新登录或重启系统才能使环境变量生效"
+    else
+        echo "✓ 输入法环境变量已配置，跳过"
+    fi
 else
-    echo "✓ 输入法环境变量已配置，跳过"
+    echo "✓ 跳过输入法环境变量配置"
 fi
 
-# 安装万象拼音方案
-echo "安装万象拼音方案..."
-sudo pacman -S --noconfirm rime-wanxiang-data rime-wanxiang-dict rime-wanxiang-dict-pinyin rime-wanxiang-gram-zh-hans rime-wanxiang-pinyin
-echo "✓ 万象拼音方案安装完成"
-
-echo "注意: 中文本地化配置可能需要重新启动才能完全生效"
+echo "=== 中文本地化配置完成 ==="
 ```
 
 ### 10.12 使用方法

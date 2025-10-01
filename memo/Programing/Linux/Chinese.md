@@ -166,12 +166,9 @@ sudo pacman -S fcitx5-im fcitx5-rime fcitx5-chinese-addons
 - 编辑 `/etc/environment` 并添加以下几行，然后重新登录 [Setup Fcitx 5](https://fcitx-im.org/wiki/Setup_Fcitx_5#Environment_variables) ：
 
 ```
-# 基于 GTK 的程序使用 fcitx5 作为输入法引擎
-export GTK_IM_MODULE=fcitx5
-# 基于 Qt 的程序使用 fcitx5 作为输入法引擎
-export QT_IM_MODULE=fcitx5
-# X系统层面的输入法设置,设置为 fcitx5,使所有 X 程序都使用 fcitx5
-export XMODIFIERS=@im=fcitx5
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
 ```
 
 ### 2.3 Configure

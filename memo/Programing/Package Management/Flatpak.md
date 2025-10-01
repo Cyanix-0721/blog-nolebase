@@ -1,4 +1,4 @@
-# Flathub
+# Flatpak
 
 ## 1 Install Flatpak
 
