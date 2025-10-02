@@ -1,13 +1,13 @@
 # Fastfetch
 
-`fastfetch` 是一款轻量级且快速的系统信息工具，类似于 `neofetch`，用于在终端中展示系统和硬件信息。以下是 `fastfetch` 的使用文档，涵盖了安装、基本用法、配置和常见问题。
+`fastfetch` 是一款轻量级且快速的系统信息工具，类似于 `neofetch`，用于在终端中展示系统和硬件信息。
 
 ## 1 安装
 
 ### 1.1 在 Arch Linux 上安装
 
 ```sh
-sudo pacman -Ss fastfetch
+sudo pacman -S fastfetch
 ```
 
 ## 2 基本用法
@@ -28,6 +28,8 @@ fastfetch
 
 ```sh
 fastfetch --gen-config
+# 生成完整版示例配置文件
+# fastfetch --gen-config-full
 ```
 
 ### 3.1 示例配置文件

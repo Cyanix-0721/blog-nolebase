@@ -213,11 +213,16 @@ sudo pacman -Syy
 ```ini
 [Unit]
 Description=Pacman mirrorlist update with Reflector
+Wants=network-online.target
+After=network-online.target
 
 [Service]
 Type=oneshot
+ExecStart=/usr/bin/reflector -c 'China,Hong Kong,Taiwan,Japan,United States' -p https -l 20 -a 24 --save /etc/pacman.d/mirrorlist
+User=root
 
-ExecStart=/usr/bin/reflector -c 'China,Hong Kong,Taiwan,Japan,United States' -p https -l 40 -a 24 --save /etc/pacman.d/mirrorlist
+[Install]
+WantedBy=multi-user.target
 ```
 
 **创建 Reflector 定时器文件**：  
@@ -226,9 +231,10 @@ ExecStart=/usr/bin/reflector -c 'China,Hong Kong,Taiwan,Japan,United States' -p 
 ```ini
 [Unit]
 Description=Run reflector weekly to update mirrorlist
+Requires=reflector.service
 
 [Timer]
-OnCalendar=weekly  # 每周触发一次
+OnCalendar=weekly
 Persistent=true
 
 [Install]
@@ -238,6 +244,7 @@ WantedBy=timers.target
 **启用并启动定时器**：  
 
 ```bash
+systemctl daemon-reload
 sudo systemctl enable reflector.timer
 sudo systemctl start reflector.timer
 ```
