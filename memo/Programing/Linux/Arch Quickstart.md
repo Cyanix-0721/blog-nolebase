@@ -113,13 +113,13 @@ export XMODIFIERS=@im=fcitx
 ### 8.1 通过 Pacman 安装
 
 ```bash
-sudo pacman -S fzf zoxide ripgrep fd eza bat obsidian keepassxc thunderbird thunderbird-i18n-zh-cn vlc mpv yazi 7zip ffmpeg neovim lazygit github-cli btop fastfetch dex poppler resvg imagemagick jq telegram-desktop
+sudo pacman -S fzf zoxide ripgrep fd eza bat obsidian keepassxc thunderbird thunderbird-i18n-zh-cn vlc mpv yazi 7zip ffmpeg neovim lazygit github-cli btop fastfetch dex poppler resvg imagemagick jq telegram-desktop podman podman-compose uv libreoffice-fresh libreoffice-fresh-zh-cn gimp stow ast-grep git-delta
 ```
 
 ### 8.2 通过 AUR 安装
 
 ```bash
-paru -S localsend-bin clash-verge-rev-bin zen-browser-bin bibata-cursor-theme-bin
+paru -S localsend-bin clash-verge-rev-bin zen-browser-bin ungoogled-chromium-bin bibata-cursor-theme-bin
 ```
 
 ## 9 一键安装脚本
@@ -388,6 +388,93 @@ if [[ $refind_available == "true" ]]; then
     fi
 fi
 
+# 安装 rEFInd 主题 (仅在 rEFInd 可用时)
+if [[ $refind_available == "true" ]]; then
+    echo "=== rEFInd 主题安装 / rEFInd Theme Installation ==="
+    read -p "是否安装 Catppuccin 主题？(Y/n) / Install Catppuccin theme? (Y/n): " install_refind_theme
+    if [[ ! $install_refind_theme =~ ^[Nn]$ ]]; then
+        
+        # 查找 rEFInd 目录
+        REFIND_DIR=""
+        if [[ -d "/boot/EFI/refind" ]]; then
+            REFIND_DIR="/boot/EFI/refind"
+            echo "找到 rEFInd 目录: $REFIND_DIR / Found rEFInd directory: $REFIND_DIR"
+        else
+            # 在 /boot 下搜索 refind 文件夹
+            echo "在 /boot 下搜索 rEFInd 目录… / Searching for rEFInd directory in /boot…"
+            REFIND_SEARCH=$(find /boot -type d -name "refind" 2>/dev/null | head -n1)
+            if [[ -n "$REFIND_SEARCH" && -d "$REFIND_SEARCH" ]]; then
+                REFIND_DIR="$REFIND_SEARCH"
+                echo "找到 rEFInd 目录: $REFIND_DIR / Found rEFInd directory: $REFIND_DIR"
+            else
+                echo "✗ 未找到 rEFInd 目录，跳过主题安装 / rEFInd directory not found, skipping theme installation"
+            fi
+        fi
+        
+        # 如果找到 rEFInd 目录，安装主题
+        if [[ -n "$REFIND_DIR" ]]; then
+            # 创建 themes 目录
+            THEMES_DIR="$REFIND_DIR/themes"
+            echo "创建主题目录: $THEMES_DIR / Creating theme directory: $THEMES_DIR"
+            sudo mkdir -p "$THEMES_DIR"
+            
+            # 克隆主题
+            echo "克隆 Catppuccin 主题… / Cloning Catppuccin theme…"
+            if command -v git &> /dev/null; then
+                sudo git clone https://github.com/catppuccin/refind.git "$THEMES_DIR/catppuccin"
+                
+                # 选择主题口味
+                echo "请选择主题口味 / Please select theme flavor:"
+                echo "1) latte"
+                echo "2) frappe" 
+                echo "3) macchiato"
+                echo "4) mocha (默认/default)"
+                read -p "输入选择 (1-4) / Enter choice (1-4) [4]: " flavor_choice
+                
+                case $flavor_choice in
+                    1) FLAVOR="latte" ;;
+                    2) FLAVOR="frappe" ;;
+                    3) FLAVOR="macchiato" ;;
+                    *) FLAVOR="mocha" ;;
+                esac
+                
+                echo "选择的口味: $FLAVOR / Selected flavor: $FLAVOR"
+                
+                # 检查主题文件是否存在
+                THEME_CONF="$THEMES_DIR/catppuccin/${FLAVOR}.conf"
+                if [[ -f "$THEME_CONF" ]]; then
+                    # 备份原配置文件
+                    REFIND_CONF="$REFIND_DIR/refind.conf"
+                    if [[ -f "$REFIND_CONF" ]]; then
+                        sudo cp "$REFIND_CONF" "$REFIND_CONF.bak"
+                        echo "已备份原配置文件: $REFIND_CONF.bak / Original config backed up: $REFIND_CONF.bak"
+                    fi
+                    
+                    # 添加主题配置到 refind.conf
+                    echo "添加主题配置到 refind.conf… / Adding theme configuration to refind.conf…"
+                    INCLUDE_LINE="include themes/catppuccin/${FLAVOR}.conf"
+                    
+                    # 检查是否已包含该主题
+                    if ! sudo grep -q "include themes/catppuccin/" "$REFIND_CONF" 2>/dev/null; then
+                        echo "$INCLUDE_LINE" | sudo tee -a "$REFIND_CONF" > /dev/null
+                        echo "✓ 主题配置已添加 / Theme configuration added"
+                    else
+                        echo "✓ 主题配置已存在 / Theme configuration already exists"
+                    fi
+                    
+                    echo "✓ Catppuccin 主题安装完成 / Catppuccin theme installation completed"
+                else
+                    echo "✗ 主题配置文件不存在: $THEME_CONF / Theme config file not found: $THEME_CONF"
+                fi
+            else
+                echo "✗ git 未安装，无法克隆主题 / git not installed, cannot clone theme"
+            fi
+        fi
+    else
+        echo "跳过 rEFInd 主题安装 / Skipping rEFInd theme installation"
+    fi
+fi
+
 # 备份工具
 echo "=== 备份工具 / Backup Tools ==="
 read -p "是否安装备份工具？(Y/n) / Install backup tools? (Y/n): " install_backup_tools
@@ -520,19 +607,42 @@ if ! command -v paru &> /dev/null; then
 fi
 
 echo "安装命令行效率工具… / Installing command line efficiency tools…"
-sudo pacman -S --noconfirm fzf zoxide ripgrep fd eza bat
+sudo pacman -S --noconfirm fzf zoxide ripgrep fd eza bat stow
 
 echo "安装办公与笔记软件… / Installing office and note-taking software…"
-sudo pacman -S --noconfirm obsidian keepassxc thunderbird thunderbird-i18n-zh-cn
-paru -S --noconfirm zen-browser-bin
+sudo pacman -S --noconfirm obsidian keepassxc thunderbird thunderbird-i18n-zh-cn libreoffice-fresh libreoffice-fresh-zh-cn
+paru -S --noconfirm zen-browser-bin ungoogled-chromium-bin
 
 echo "安装媒体与工具软件… / Installing media and utility software…"
-sudo pacman -S --noconfirm vlc mpv yazi 7zip ffmpeg
+sudo pacman -S --noconfirm vlc mpv yazi 7zip ffmpeg gimp
 paru -S --noconfirm localsend-bin bibata-cursor-theme-bin
 
 echo "安装开发与系统工具… / Installing development and system tools…"
-sudo pacman -S --noconfirm neovim lazygit github-cli btop fastfetch dex
+sudo pacman -S --noconfirm neovim lazygit github-cli btop fastfetch dex uv ast-grep git-delta
 paru -S --noconfirm clash-verge-rev-bin
+
+# 询问是否安装 Podman
+echo -n "是否安装 Podman 和 podman-compose？[Y/n] / Install Podman and podman-compose? [Y/n]: "
+read -r install_podman
+
+# 设置默认值为 Y
+install_podman=${install_podman:-Y}
+
+if [[ $install_podman =~ ^[Yy]$ ]]; then
+    echo "安装 Podman 和 podman-compose… / Installing Podman and podman-compose…"
+    sudo pacman -S --noconfirm podman podman-compose
+    
+    echo "配置 Podman 镜像源… / Configuring Podman registry mirror…"
+    
+    # 创建配置文件并写入内容
+    sudo tee /etc/containers/registries.conf.d/10-unqualified-search-registries.conf << EOF
+unqualified-search-registries = ["docker.io"]
+EOF
+    
+    echo "✓ Podman 安装和配置完成 / Podman installation and configuration completed"
+else
+    echo "跳过 Podman 安装 / Skipping Podman installation"
+fi
 
 echo "安装文档处理工具… / Installing document processing tools…"
 sudo pacman -S --noconfirm poppler resvg imagemagick jq

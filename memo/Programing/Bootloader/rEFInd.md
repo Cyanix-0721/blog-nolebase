@@ -33,11 +33,22 @@ rEFInd 的配置文件位于 `/boot/EFI/refind/refind.conf`，可以通过编辑
 
 ### 3.1 启用图形主题
 
-rEFInd 支持主题，可以通过设置 `refind.conf` 文件来启用自定义图形界面。
+**安装主题步骤：**
+1. 定位到 rEFInd 安装目录（例如 `/boot/EFI/refind`）
+2. 在该目录下创建 `themes` 文件夹（如果不存在）
+3. 克隆 Catppuccin 主题到 themes 文件夹：
+
+   ```bash
+   git clone https://github.com/catppuccin/refind.git catppuccin
+   ```
+
+4. 在 `refind.conf` 配置文件中添加主题引用：
 
 ```conf
-include themes/rEFInd-minimal/theme.conf
+include themes/catppuccin/mocha.conf
 ```
+
+**注意：** 您可以根据喜好将 `mocha` 替换为其他口味：`latte`、`frappe`、`macchiato` 或 `mocha`。
 
 ### 3.2 设置默认启动项
 

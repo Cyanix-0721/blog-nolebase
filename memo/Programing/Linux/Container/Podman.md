@@ -179,30 +179,86 @@ sudo pacman -S buildah
 buildah bud -t <tag> <path>
 ```
 
-## 6 性能监控
-
-### 6.1 使用 `pcp-pmda-podman` 收集性能指标
-
-PCP 性能监控工具可以用来从 Podman 容器中收集性能数据。
-
-#### 6.1.1 安装 `pcp-pmda-podman`
+## 6 配置镜像源
 
 ```bash
-sudo pacman -S pcp-pmda-podman
+# 创建配置文件并写入内容
+sudo tee /etc/containers/registries.conf.d/10-unqualified-search-registries.conf << EOF
+unqualified-search-registries = ["docker.io"]
+EOF
 ```
 
-配置 PCP 以监控 Podman 容器的性能数据。
+## 7 Rootless 模式
 
-## 7 其他工具
+> [!note] Rootless vs Rootful  
+> Podman 支持两种运行模式：
+> - **Rootless（无根模式）**：普通用户运行容器，网络会自动设置，容器没有独立 IP 地址，安全性更高
+> - **Rootful（有根模式）**：root 用户运行容器，容器有独立 IP 地址
 
-### 7.1 Cockpit Podman 插件
+> [!info] Rootless 模式的优势
+>
+> - **安全优势**
+> 	- **权限隔离**：容器进程以普通用户权限运行，即使容器被攻破，攻击者也无法获得宿主机 root 权限
+> 	- **无守护进程**：Podman 采用无守护进程架构，消除单点故障和安全风险
+> 	- **用户隔离**：不同用户的容器相互隔离，无法访问彼此的容器  
+> - **资源效率**
+> 	- Podman 无守护进程架构占用系统资源更少，适合资源受限环境
+> 	- 每个用户独立管理自己的容器环境
 
-提供图形界面来管理 Podman 容器。
+### 7.1 启用 Rootless 模式
 
-#### 7.1.1 安装 `cockpit-podman`
+#### 7.1.1 启用用户命名空间
 
 ```bash
-sudo pacman -S cockpit-podman
+# 检查当前设置
+sysctl kernel.unprivileged_userns_clone
+
+# 如果输出为 0，则临时启用
+sudo sysctl kernel.unprivileged_userns_clone=1
+
+# 永久启用（在 /etc/sysctl.d/ 中创建配置文件）
+echo 'kernel.unprivileged_userns_clone=1' | sudo tee /etc/sysctl.d/99-podman.conf
 ```
 
-通过 Cockpit UI 访问并管理 Podman 容器。
+> **注意**：使用 `linux-hardened` 内核时，此选项默认关闭，需手动开启。
+
+#### 7.1.2 配置用户子 UID/GID
+
+```bash
+# 为用户分配子 UID 和 GID 范围
+sudo usermod --add-subuids 100000-165535 --add-subgids 100000-165535 $USER
+
+# 应用更改
+podman system migrate
+```
+
+### 7.2 验证 Rootless 模式
+
+```bash
+# 以普通用户身份运行容器测试
+podman run --rm alpine echo "Hello Rootless Podman"
+
+# 检查容器是否以当前用户身份运行
+podman ps
+```
+
+## 8 故障排查
+
+### 8.1 镜像拉取失败
+
+如果配置镜像源后仍无法拉取镜像，可检查镜像源可用性：
+
+```bash
+# 启用详细日志查看具体错误
+podman --log-level=debug pull alpine
+```
+
+### 8.2 Rootless 网络问题
+
+Rootless 模式下容器网络受限，如需更复杂的网络配置，可考虑：
+
+```bash
+# 创建自定义网络（需要安装 CNI 插件）
+podman network create my-network
+podman run --network=my-network --rm alpine ping example.com
+```
