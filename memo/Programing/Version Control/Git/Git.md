@@ -560,4 +560,4 @@ git config --global credential.helper manager
 
 ### 6.2 SSH 密钥验证
 
-![SSH 密钥验证](SSH)
+![[SSH]]

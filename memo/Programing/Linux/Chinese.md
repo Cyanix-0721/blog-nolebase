@@ -163,19 +163,34 @@ sudo pacman -S fcitx5-im fcitx5-rime fcitx5-chinese-addons
 
 ### 2.2 Usage
 
-- 编辑 `/etc/environment` 并添加以下几行，然后重新登录 [Setup Fcitx 5](https://fcitx-im.org/wiki/Setup_Fcitx_5#Environment_variables) ：
+1. **创建配置目录**（如果不存在）：
 
-```
-export GTK_IM_MODULE=fcitx
-export QT_IM_MODULE=fcitx
-export XMODIFIERS=@im=fcitx
-```
+   ```bash
+   mkdir -p ~/.config/environment.d
+   ```
 
-### 2.3 Configure
+2. **创建输入法环境变量配置文件**：  
+   在 `~/.config/environment.d/fcitx.conf` 文件中添加以下内容：
+
+	```conf
+	# 基础输入法环境变量
+	INPUT_METHOD=fcitx
+	XMODIFIERS=@im=fcitx
+	
+	# 各框架输入法模块
+	QT_IM_MODULE=fcitx
+	GTK_IM_MODULE=fcitx
+	SDL_IM_MODULE=fcitx
+	GLFW_IM_MODULE=fcitx
+	```
+
+3. **重新登录系统**以使配置生效。
+
+## 1 Configure
 
 [fcitx5](https://archlinux.org/packages/?name=fcitx5) 包的配置文件位于 `~/.config/fcitx5`，尽管您可以使用文本编辑器编辑配置文件，但是使用 GUI 配置显然更方便。安装 [fcitx5-configtool](https://archlinux.org/packages/?name=fcitx5-configtool) <sup>包</sup> 软件包。**(Include in fcitx5-im)**
 
-## 3 Fix Chinese under Flatpak
+# 3 Fix Chinese under Flatpak
 
 > [!info] [XDG_Desktop_Portal](https://wiki.archlinux.org/title/XDG_Desktop_Portal)  
 

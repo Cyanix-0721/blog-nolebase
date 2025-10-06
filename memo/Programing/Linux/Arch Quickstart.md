@@ -100,26 +100,20 @@ sudo pacman -S fcitx5-im fcitx5-rime fcitx5-chinese-addons rime-wanxiang-pinyin
 
 ### 7.4 配置输入法环境变量<sup>Optional</sup>
 
-编辑 `/etc/environment` 并添加以下内容：
-
-```bash
-export GTK_IM_MODULE=fcitx
-export QT_IM_MODULE=fcitx
-export XMODIFIERS=@im=fcitx
-```
+![[Chinese#2.2 Usage]]
 
 ## 8 安装常用软件
 
 ### 8.1 通过 Pacman 安装
 
 ```bash
-sudo pacman -S fzf zoxide ripgrep fd eza bat obsidian keepassxc thunderbird thunderbird-i18n-zh-cn vlc mpv yazi 7zip ffmpeg neovim lazygit github-cli btop fastfetch dex poppler resvg imagemagick jq telegram-desktop podman podman-compose uv libreoffice-fresh libreoffice-fresh-zh-cn gimp stow ast-grep git-delta
+sudo pacman -S fzf zoxide ripgrep fd eza bat obsidian keepassxc thunderbird thunderbird-i18n-zh-cn vlc mpv yazi 7zip ffmpeg neovim lazygit github-cli btop fastfetch dex poppler resvg imagemagick jq telegram-desktop podman podman-compose uv libreoffice-fresh libreoffice-fresh-zh-cn gimp stow ast-grep git-delta dolphin nautilus mako fuzzel
 ```
 
 ### 8.2 通过 AUR 安装
 
 ```bash
-paru -S localsend-bin clash-verge-rev-bin zen-browser-bin ungoogled-chromium-bin bibata-cursor-theme-bin
+paru -S localsend-bin clash-verge-rev-bin zen-browser-bin ungoogled-chromium-bin bibata-cursor-theme-bin qt6ct-kde
 ```
 
 ## 9 一键安装脚本
@@ -577,13 +571,26 @@ read -p "是否配置输入法环境变量？(y/N) / Configure input method envi
 
 if [[ "$configure_im" =~ ^[Yy]$ ]]; then
     echo "配置输入法环境变量… / Configuring input method environment variables…"
-    if ! sudo grep -q "GTK_IM_MODULE=fcitx" /etc/environment; then
-        echo -e "\nexport GTK_IM_MODULE=fcitx\nexport QT_IM_MODULE=fcitx\nexport XMODIFIERS=@im=fcitx" | sudo tee -a /etc/environment > /dev/null
-        echo "✓ 输入法环境变量配置完成 / ✓ Input method environment variables configured"
-        echo "注意：需要重新登录或重启系统才能使环境变量生效 / Note: You need to re-login or reboot for environment variables to take effect"
-    else
-        echo "✓ 输入法环境变量已配置，跳过 / ✓ Input method environment variables already configured, skipping"
-    fi
+    
+    # 创建配置目录（如果不存在）
+    mkdir -p ~/.config/environment.d
+    
+    # 创建输入法环境变量配置文件
+    cat > ~/.config/environment.d/fcitx.conf << 'EOF'
+# 基础输入法环境变量
+INPUT_METHOD=fcitx
+XMODIFIERS=@im=fcitx
+
+# 各框架输入法模块
+QT_IM_MODULE=fcitx
+GTK_IM_MODULE=fcitx
+SDL_IM_MODULE=fcitx
+GLFW_IM_MODULE=fcitx
+EOF
+
+    echo "✓ 输入法环境变量配置完成 / ✓ Input method environment variables configured"
+    echo "配置文件位置：~/.config/environment.d/fcitx.conf"
+    echo "注意：需要重新登录或重启系统才能使环境变量生效 / Note: You need to re-login or reboot for environment variables to take effect"
 else
     echo "✓ 跳过输入法环境变量配置 / ✓ Skipping input method environment variables configuration"
 fi
@@ -601,9 +608,9 @@ set -e
 echo "=== 安装常用软件 / Installing Common Software ==="
 
 # 检查 paru 是否已安装
-if ! command -v paru &> /dev/null; then
-    echo "错误: paru 未安装，请先运行系统基础环境配置脚本 / Error: paru not installed, please run the system foundation setup script first"
-    exit 1
+if ! command -v paru &>/dev/null; then
+  echo "错误: paru 未安装，请先运行系统基础环境配置脚本 / Error: paru not installed, please run the system foundation setup script first"
+  exit 1
 fi
 
 echo "安装命令行工具… / Installing command line tools…"
@@ -612,12 +619,15 @@ sudo pacman -S --noconfirm fzf zoxide ripgrep fd eza bat stow btop fastfetch dex
 echo "安装开发工具… / Installing development tools…"
 sudo pacman -S --noconfirm neovim lazygit github-cli uv ast-grep git-delta poppler resvg imagemagick jq
 
-echo "安装日常应用… / Installing daily applications…"
-sudo pacman -S --noconfirm obsidian keepassxc thunderbird thunderbird-i18n-zh-cn libreoffice-fresh libreoffice-fresh-zh-cn vlc mpv ffmpeg gimp yazi 7zip telegram-desktop
-paru -S --noconfirm zen-browser-bin ungoogled-chromium-bin localsend-bin bibata-cursor-theme-bin
+echo "安装系统工具… / Installing system tools…"
+sudo pacman -S --noconfirm mako fuzzel
 
 echo "安装网络工具… / Installing network tools…"
 paru -S --noconfirm clash-verge-rev-bin
+
+echo "安装日常应用… / Installing daily applications…"
+sudo pacman -S --noconfirm obsidian keepassxc thunderbird thunderbird-i18n-zh-cn libreoffice-fresh libreoffice-fresh-zh-cn vlc mpv ffmpeg gimp yazi 7zip telegram-desktop dolphin nautilus
+paru -S --noconfirm zen-browser-bin ungoogled-chromium-bin localsend-bin bibata-cursor-theme-bin qt6ct-kde
 
 # 询问是否安装 Podman
 echo -n "是否安装 Podman 和 podman-compose？[Y/n] / Install Podman and podman-compose? [Y/n]: "
@@ -626,17 +636,17 @@ read -r install_podman
 install_podman=${install_podman:-Y}
 
 if [[ $install_podman =~ ^[Yy]$ ]]; then
-    echo "安装容器工具… / Installing container tools…"
-    sudo pacman -S --noconfirm podman podman-compose
-    
-    echo "配置 Podman 镜像源… / Configuring Podman registry mirror…"
-    sudo tee /etc/containers/registries.conf.d/10-unqualified-search-registries.conf << EOF
+  echo "安装容器工具… / Installing container tools…"
+  sudo pacman -S --noconfirm podman podman-compose
+
+  echo "配置 Podman 镜像源… / Configuring Podman registry mirror…"
+  sudo tee /etc/containers/registries.conf.d/10-unqualified-search-registries.conf <<EOF
 unqualified-search-registries = ["docker.io"]
 EOF
-    
-    echo "✓ Podman 安装和配置完成 / Podman installation and configuration completed"
+
+  echo "✓ Podman 安装和配置完成 / Podman installation and configuration completed"
 else
-    echo "跳过 Podman 安装 / Skipping Podman installation"
+  echo "跳过 Podman 安装 / Skipping Podman installation"
 fi
 
 # 询问是否安装 LazyVim
@@ -646,41 +656,41 @@ read -r install_lazyvim
 install_lazyvim=${install_lazyvim:-N}
 
 if [[ $install_lazyvim =~ ^[Yy]$ ]]; then
-    echo "安装 LazyVim Starter… / Installing LazyVim Starter…"
-    
-    # 询问是否备份现有配置
-    echo -n "是否备份现有 Neovim 配置？[Y/n] / Backup existing Neovim configuration? [Y/n]: "
-    read -r backup_nvim
-    
-    backup_nvim=${backup_nvim:-Y}
-    
-    if [[ $backup_nvim =~ ^[Yy]$ ]]; then
-        echo "备份 Neovim 配置… / Backing up Neovim configuration…"
-        # 必需备份
-        mv ~/.config/nvim ~/.config/nvim.bak 2>/dev/null || echo "无现有 nvim 配置可备份 / No existing nvim configuration to backup"
-        
-        # 可选但推荐的备份
-        mv ~/.local/share/nvim ~/.local/share/nvim.bak 2>/dev/null || echo "无 nvim 共享数据可备份 / No nvim share data to backup"
-        mv ~/.local/state/nvim ~/.local/state/nvim.bak 2>/dev/null || echo "无 nvim 状态数据可备份 / No nvim state data to backup"
-        mv ~/.cache/nvim ~/.cache/nvim.bak 2>/dev/null || echo "无 nvim 缓存可备份 / No nvim cache to backup"
-        
-        echo "✓ Neovim 配置备份完成 / Neovim configuration backup completed"
-    fi
-    
-    # 克隆 LazyVim starter
-    git clone https://github.com/LazyVim/starter ~/.config/nvim
-    
-    # 删除 .git 文件夹
-    rm -rf ~/.config/nvim/.git
-    
-    echo "✓ LazyVim Starter 安装完成 / LazyVim Starter installation completed"
-    echo ""
-    echo "提示 / Tip:"
-    echo "  1. 运行 'nvim' 启动 Neovim / Run 'nvim' to start Neovim"
-    echo "  2. 建议运行 :LazyHealth 检查安装状态 / It is recommended to run :LazyHealth to check if everything is working correctly"
-    echo "  3. 参考配置文件中的注释来自定义 LazyVim / Refer to the comments in the files on how to customize LazyVim"
+  echo "安装 LazyVim Starter… / Installing LazyVim Starter…"
+
+  # 询问是否备份现有配置
+  echo -n "是否备份现有 Neovim 配置？[Y/n] / Backup existing Neovim configuration? [Y/n]: "
+  read -r backup_nvim
+
+  backup_nvim=${backup_nvim:-Y}
+
+  if [[ $backup_nvim =~ ^[Yy]$ ]]; then
+    echo "备份 Neovim 配置… / Backing up Neovim configuration…"
+    # 必需备份
+    mv ~/.config/nvim ~/.config/nvim.bak 2>/dev/null || echo "无现有 nvim 配置可备份 / No existing nvim configuration to backup"
+
+    # 可选但推荐的备份
+    mv ~/.local/share/nvim ~/.local/share/nvim.bak 2>/dev/null || echo "无 nvim 共享数据可备份 / No nvim share data to backup"
+    mv ~/.local/state/nvim ~/.local/state/nvim.bak 2>/dev/null || echo "无 nvim 状态数据可备份 / No nvim state data to backup"
+    mv ~/.cache/nvim ~/.cache/nvim.bak 2>/dev/null || echo "无 nvim 缓存可备份 / No nvim cache to backup"
+
+    echo "✓ Neovim 配置备份完成 / Neovim configuration backup completed"
+  fi
+
+  # 克隆 LazyVim starter
+  git clone https://github.com/LazyVim/starter ~/.config/nvim
+
+  # 删除 .git 文件夹
+  rm -rf ~/.config/nvim/.git
+
+  echo "✓ LazyVim Starter 安装完成 / LazyVim Starter installation completed"
+  echo ""
+  echo "提示 / Tip:"
+  echo "  1. 运行 'nvim' 启动 Neovim / Run 'nvim' to start Neovim"
+  echo "  2. 建议运行 :LazyHealth 检查安装状态 / It is recommended to run :LazyHealth to check if everything is working correctly"
+  echo "  3. 参考配置文件中的注释来自定义 LazyVim / Refer to the comments in the files on how to customize LazyVim"
 else
-    echo "跳过 LazyVim 安装 / Skipping LazyVim installation"
+  echo "跳过 LazyVim 安装 / Skipping LazyVim installation"
 fi
 
 echo "✓ 常用软件安装完成 / Common software installation completed"
