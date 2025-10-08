@@ -107,7 +107,7 @@ sudo pacman -S fcitx5-im fcitx5-rime fcitx5-chinese-addons rime-wanxiang-pinyin
 ### 8.1 通过 Pacman 安装
 
 ```bash
-sudo pacman -S fzf zoxide ripgrep fd eza bat obsidian keepassxc thunderbird thunderbird-i18n-zh-cn vlc mpv yazi 7zip ffmpeg neovim lazygit github-cli btop fastfetch dex poppler resvg imagemagick jq telegram-desktop podman podman-compose uv libreoffice-fresh libreoffice-fresh-zh-cn gimp stow ast-grep git-delta dolphin nautilus mako fuzzel android-tools scrcpy
+sudo pacman -S fzf zoxide ripgrep fd eza bat obsidian keepassxc thunderbird thunderbird-i18n-zh-cn mpv yazi 7zip ffmpeg neovim lazygit github-cli btop fastfetch dex poppler resvg imagemagick jq telegram-desktop podman podman-compose uv libreoffice-fresh libreoffice-fresh-zh-cn gimp stow ast-grep git-delta dolphin nautilus mako fuzzel android-tools scrcpy syncthing ntfs-3g luarocks python-pynvim viu mpd mpc ncmpcpp
 ```
 
 ### 8.2 通过 AUR 安装
@@ -614,19 +614,19 @@ if ! command -v paru &>/dev/null; then
 fi
 
 echo "安装命令行工具… / Installing command line tools…"
-sudo pacman -S --noconfirm fzf zoxide ripgrep fd eza bat stow btop fastfetch dex
+sudo pacman -S --noconfirm fzf zoxide ripgrep fd eza bat stow btop fastfetch dex viu
 
 echo "安装开发工具… / Installing development tools…"
-sudo pacman -S --noconfirm neovim lazygit github-cli uv ast-grep git-delta poppler resvg imagemagick jq android-tools
+sudo pacman -S --noconfirm neovim python-pynvim lazygit github-cli uv ast-grep git-delta poppler resvg imagemagick jq android-tools luarocks
 
 echo "安装系统工具… / Installing system tools…"
-sudo pacman -S --noconfirm mako fuzzel
+sudo pacman -S --noconfirm mako fuzzel ntfs-3g
 
 echo "安装网络工具… / Installing network tools…"
 paru -S --noconfirm clash-verge-rev-bin
 
 echo "安装日常应用… / Installing daily applications…"
-sudo pacman -S --noconfirm obsidian keepassxc thunderbird thunderbird-i18n-zh-cn libreoffice-fresh libreoffice-fresh-zh-cn vlc mpv ffmpeg gimp yazi 7zip telegram-desktop dolphin nautilus scrcpy
+sudo pacman -S --noconfirm obsidian keepassxc thunderbird thunderbird-i18n-zh-cn libreoffice-fresh libreoffice-fresh-zh-cn mpv ffmpeg gimp yazi 7zip telegram-desktop dolphin nautilus scrcpy syncthing mpd mpc ncmpcpp
 paru -S --noconfirm zen-browser-bin ungoogled-chromium-bin localsend-bin bibata-cursor-theme-bin qt6ct-kde
 
 # 询问是否安装 Podman
@@ -694,6 +694,7 @@ else
 fi
 
 echo "✓ 常用软件安装完成 / Common software installation completed"
+
 ```
 
 ### 9.6 使用方法

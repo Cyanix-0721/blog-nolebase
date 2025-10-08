@@ -44,7 +44,7 @@ sudo pacman -S grub os-prober
 
 > [!warning]
 > - 如果你只有一个 `vfat` 分区，并且它挂载在 `/boot` 目录下，这意味着你的EFI系统分区（ESP）和Linux内核、初始RAM磁盘（initramfs）等文件都存放在同一个分区里。  
->
+> 
 > **查看分区内容**：`ls /boot`
 >
 > 你应该能看到类似 `EFI`、`vmlinuz-linux`、`initramfs-linux.img` 等文件或目录。  
