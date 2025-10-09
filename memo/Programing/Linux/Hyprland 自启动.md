@@ -1,4 +1,4 @@
-# 自启动
+# Hyprland 自启动
 
 在 **Arch Linux + Hyprland** 环境下，`~/.config/autostart` 可能不会自动生效，因为 Hyprland 是一个 Wayland 合成器，不直接支持传统的 X11 自启动机制（如 `autostart` 目录）。
 

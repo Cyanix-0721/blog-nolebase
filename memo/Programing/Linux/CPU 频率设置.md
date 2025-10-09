@@ -1,6 +1,4 @@
-# CPU 频率
-
-在 **Arch Linux** 下设置 **AMD Ryzen 7 5800H** 的 CPU 频率上限，可以通过以下几种方法实现：
+# CPU 频率设置
 
 ## 1 **1. 使用 `cpufreq` 调节器（推荐）**
 
@@ -49,7 +47,7 @@ Arch Linux 默认使用 `cpufreq` 进行 CPU 频率管理，可以通过 `cpupow
 
 ## 2 **2. 使用 `ryzenadj`（调整 TDP/功耗墙，间接影响频率）**
 
-由于 **5800H 不支持直接超频**，但可以通过调整 **TDP（功耗墙）** 间接影响频率上限：
+可以通过调整 **TDP（功耗墙）** 间接影响频率上限：
 1. **安装 `ryzenadj`**：
 
    ```bash
@@ -109,7 +107,7 @@ Arch Linux 默认使用 `cpufreq` 进行 CPU 频率管理，可以通过 `cpupow
 
 ## 5 **5. 使用 `undervolt`（降压优化，减少降频）**
 
-虽然 **5800H 不支持传统超频**，但可以尝试 **降压（Undervolt）** 以减少发热，间接提高 Boost 频率的稳定性：
+可以尝试 **降压（Undervolt）** 以减少发热，间接提高 Boost 频率的稳定性：
 1. **使用 `zenstates`（AUR）**：
 
    ```bash
@@ -121,8 +119,6 @@ Arch Linux 默认使用 `cpufreq` 进行 CPU 频率管理，可以通过 `cpupow
    ```bash
    sudo zenstates --set CO=-10  # 尝试 -10mV 偏移
    ```
-
-   - 需逐步测试稳定性（如 `Prime95`）。
 
 ## 6 **总结**
 
