@@ -1,4 +1,6 @@
-# Arch Linux 快速配置指南
+# Arch Quickstart
+
+F# Arch Linux 快速配置指南
 
 ## 1 基础环境准备
 
@@ -107,13 +109,13 @@ sudo pacman -S fcitx5-im fcitx5-rime fcitx5-chinese-addons rime-wanxiang-pinyin
 ### 8.1 通过 Pacman 安装
 
 ```bash
-sudo pacman -S fzf zoxide ripgrep fd eza bat obsidian keepassxc thunderbird thunderbird-i18n-zh-cn mpv yazi 7zip ffmpeg neovim lazygit github-cli btop fastfetch dex poppler resvg imagemagick jq telegram-desktop podman podman-compose uv libreoffice-fresh libreoffice-fresh-zh-cn gimp stow ast-grep git-delta dolphin nautilus mako fuzzel android-tools scrcpy syncthing ntfs-3g luarocks python-pynvim viu mpd rmpc
+sudo pacman -S fzf zoxide ripgrep fd eza bat obsidian keepassxc thunderbird thunderbird-i18n-zh-cn mpv yazi 7zip ffmpeg neovim lazygit gitui github-cli btop fastfetch dex poppler resvg imagemagick jq telegram-desktop podman podman-compose uv libreoffice-fresh libreoffice-fresh-zh-cn gimp stow ast-grep git-delta dolphin nautilus mako fuzzel scrcpy syncthing ntfs-3g luarocks python-pynvim viu mpd rmpc kdenlive
 ```
 
 ### 8.2 通过 AUR 安装
 
 ```bash
-paru -S localsend-bin clash-verge-rev-bin zen-browser-bin ungoogled-chromium-bin bibata-cursor-theme-bin qt6ct-kde
+paru -S localsend-bin clash-verge-rev-bin zen-browser-bin ungoogled-chromium-bin bibata-cursor-theme-bin qt6ct-kde octopi vesktop-bin
 ```
 
 ## 9 一键安装脚本
@@ -617,17 +619,18 @@ echo "安装命令行工具… / Installing command line tools…"
 sudo pacman -S --noconfirm fzf zoxide ripgrep fd eza bat stow btop fastfetch dex viu
 
 echo "安装开发工具… / Installing development tools…"
-sudo pacman -S --noconfirm neovim python-pynvim lazygit github-cli uv ast-grep git-delta poppler resvg imagemagick jq android-tools luarocks
+sudo pacman -S --noconfirm neovim python-pynvim lazygit gitui github-cli uv ast-grep git-delta poppler resvg imagemagick jq luarocks
 
 echo "安装系统工具… / Installing system tools…"
 sudo pacman -S --noconfirm mako fuzzel ntfs-3g
+paru -S --noconfirm octopi
 
 echo "安装网络工具… / Installing network tools…"
 paru -S --noconfirm clash-verge-rev-bin
 
 echo "安装日常应用… / Installing daily applications…"
-sudo pacman -S --noconfirm obsidian keepassxc thunderbird thunderbird-i18n-zh-cn libreoffice-fresh libreoffice-fresh-zh-cn mpv ffmpeg gimp yazi 7zip telegram-desktop dolphin nautilus scrcpy syncthing mpd rmpc
-paru -S --noconfirm zen-browser-bin ungoogled-chromium-bin localsend-bin bibata-cursor-theme-bin qt6ct-kde
+sudo pacman -S --noconfirm obsidian keepassxc thunderbird thunderbird-i18n-zh-cn libreoffice-fresh libreoffice-fresh-zh-cn mpv ffmpeg gimp yazi 7zip telegram-desktop dolphin nautilus scrcpy syncthing mpd rmpc kdenlive
+paru -S --noconfirm zen-browser-bin ungoogled-chromium-bin localsend-bin bibata-cursor-theme-bin qt6ct-kde vesktop-bin
 
 # 询问是否安装 Podman
 echo -n "是否安装 Podman 和 podman-compose？[Y/n] / Install Podman and podman-compose? [Y/n]: "
