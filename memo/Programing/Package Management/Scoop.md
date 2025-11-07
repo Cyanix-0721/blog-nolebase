@@ -115,13 +115,12 @@ scoop info python
 
 Scoop 通过 **Buckets** 来组织软件列表。官方维护了一个名为 `main` 的默认 bucket，主要包含命令行工具。您需要添加其他 bucket 来获取更多软件（如桌面应用程序）。
 
-| 常用 Bucket       | 描述                                   |
-| :---------------- | :------------------------------------- |
-| **main**          | 默认 bucket，包含经典命令行工具。        |
-| **extras**        | **必加**！包含大量流行的桌面应用程序（如 Chrome, VSCode, Spotify）。 |
-| **versions**      | 包含多个版本的软件（如 Java8, Python2.7, Node.js LTS）。 |
-| **nirsoft**       | 包含 NirSoft 公司的所有小工具。          |
-| **games**         | 包含一些免费的游戏和游戏相关工具。         |
+| 常用 Bucket      | 描述                                               |
+| :------------- | :----------------------------------------------- |
+| **main**       | 默认 bucket，包含经典命令行工具。                             |
+| **extras**     | **必加**！包含大量流行的桌面应用程序（如 Chrome, VSCode, Spotify）。 |
+| **versions**   | 包含多个版本的软件（如 Java8, Python2.7, Node.js LTS）。      |
+| **nerd-fonts** | 包含常见 nerd font。                                  |
 
 ```powershell
 # 列出已知的官方 buckets
