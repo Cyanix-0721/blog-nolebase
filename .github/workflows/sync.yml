@@ -1,43 +1,53 @@
 name: Sync B to A
-
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * *'   # 每天 UTC 00:00 执行（即北京时间 08:00）
   workflow_dispatch:
 
 permissions:
   contents: write
-  
+
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout A repository
+      - name: Checkout A repository（目标仓库）
         uses: actions/checkout@v4
         with:
           ref: main
 
-      - name: Checkout B repository
+      - name: Checkout B repository（源仓库）
         uses: actions/checkout@v4
         with:
           repository: Cyanix-0721/memo
           path: B_repo
           ref: main
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}   # 如果 B 是公开仓库，这里可以用 GITHUB_TOKEN 也行
 
       - name: Sync files from B to A
         run: |
           rsync -avu --delete B_repo/memo/ ./memo/
-          
+
       - name: Remove B_repo directory
         run: rm -rf B_repo
 
-      - name: Commit and push changes
+      - name: Commit and push if changed
         run: |
           git config user.name "Cyanix-0721"
           git config user.email "34270450+Cyanix-0721@users.noreply.github.com"
+
           git add .
-          git commit -m "Sync files from B repository"
+
+          # 如果没有实际改动，直接成功退出，防止每天失败邮件
+          if git diff --staged --quiet; then
+            echo "No changes detected, nothing to commit."
+            exit 0
+          fi
+
+          # 有改动才 commit 和 push
+          git commit -m "Sync memo from B repository $(date '+%Y-%m-%d %H:%M:%S')"
           git push
+
+          echo "Changes have been synced and pushed successfully!"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
