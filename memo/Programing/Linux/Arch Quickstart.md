@@ -109,13 +109,13 @@ sudo pacman -S fcitx5-im fcitx5-rime fcitx5-chinese-addons rime-wanxiang-pinyin
 ### 8.1 通过 Pacman 安装
 
 ```bash
-sudo pacman -S fzf zoxide ripgrep fd eza bat obsidian keepassxc thunderbird thunderbird-i18n-zh-cn mpv yazi 7zip ffmpeg neovim lazygit gitui github-cli btop fastfetch dex poppler resvg imagemagick jq telegram-desktop podman podman-compose uv libreoffice-fresh libreoffice-fresh-zh-cn gimp stow ast-grep git-delta dolphin nautilus mako fuzzel scrcpy syncthing ntfs-3g luarocks python-pynvim viu mpd rmpc kdenlive
+sudo pacman -S fzf zoxide ripgrep fd eza bat obsidian keepassxc thunderbird thunderbird-i18n-zh-cn mpv yazi 7zip ffmpeg neovim lazygit gitui github-cli btop fastfetch dex poppler resvg imagemagick jq podman podman-compose uv libreoffice-fresh libreoffice-fresh-zh-cn gimp stow ast-grep git-delta dolphin nautilus mako fuzzel scrcpy syncthing ntfs-3g luarocks python-pynvim viu mpd rmpc kdenlive player
 ```
 
 ### 8.2 通过 AUR 安装
 
 ```bash
-paru -S localsend-bin clash-verge-rev-bin zen-browser-bin ungoogled-chromium-bin bibata-cursor-theme-bin qt6ct-kde octopi vesktop-bin
+paru -S localsend-bin clash-verge-rev-bin zen-browser-bin ungoogled-chromium-bin bibata-cursor-theme-bin qt6ct octopi vesktop-bin ayugram-desktop
 ```
 
 ## 9 一键安装脚本
@@ -619,18 +619,19 @@ echo "安装命令行工具… / Installing command line tools…"
 sudo pacman -S --noconfirm fzf zoxide ripgrep fd eza bat stow btop fastfetch dex viu
 
 echo "安装开发工具… / Installing development tools…"
-sudo pacman -S --noconfirm neovim python-pynvim lazygit gitui github-cli uv ast-grep git-delta poppler resvg imagemagick jq luarocks
+sudo pacman -S --noconfirm neovim python-pynvim lazygit gitui github-cli uv ast-grep git-delta poppler resvg imagemagick jq luarocks ruff
+paru -S --noconfirm visual-studio-code-bin
 
 echo "安装系统工具… / Installing system tools…"
-sudo pacman -S --noconfirm mako fuzzel ntfs-3g
-paru -S --noconfirm octopi
+sudo pacman -S --noconfirm mako fuzzel ntfs-3g niri isd xwayland-satellite playerctl
+paru -S --noconfirm octopi dms-shell-bin
 
 echo "安装网络工具… / Installing network tools…"
 paru -S --noconfirm clash-verge-rev-bin
 
 echo "安装日常应用… / Installing daily applications…"
-sudo pacman -S --noconfirm obsidian keepassxc thunderbird thunderbird-i18n-zh-cn libreoffice-fresh libreoffice-fresh-zh-cn mpv ffmpeg gimp yazi 7zip telegram-desktop dolphin nautilus scrcpy syncthing mpd rmpc kdenlive
-paru -S --noconfirm zen-browser-bin ungoogled-chromium-bin localsend-bin bibata-cursor-theme-bin qt6ct-kde vesktop-bin
+sudo pacman -S --noconfirm obsidian keepassxc thunderbird thunderbird-i18n-zh-cn libreoffice-fresh libreoffice-fresh-zh-cn mpv ffmpeg gimp yazi 7zip dolphin nautilus scrcpy syncthing mpd rmpc kdenlive
+paru -S --noconfirm zen-browser-bin ungoogled-chromium-bin localsend-bin bibata-cursor-theme-bin qt6ct-kde vesktop-bin ayugram-desktop
 
 # 询问是否安装 Podman
 echo -n "是否安装 Podman 和 podman-compose？[Y/n] / Install Podman and podman-compose? [Y/n]: "
@@ -640,7 +641,7 @@ install_podman=${install_podman:-Y}
 
 if [[ $install_podman =~ ^[Yy]$ ]]; then
   echo "安装容器工具… / Installing container tools…"
-  sudo pacman -S --noconfirm podman podman-compose
+  sudo pacman -S --noconfirm podman podman-compose podman-docker
 
   echo "配置 Podman 镜像源… / Configuring Podman registry mirror…"
   sudo tee /etc/containers/registries.conf.d/10-unqualified-search-registries.conf <<EOF
@@ -710,7 +711,37 @@ else
   echo "跳过 vfox 安装 / Skipping vfox installation"
 fi
 
+# 询问是否启用 MPD 服务
+echo -n "是否启用 MPD (音乐播放器守护进程) 用户服务？[Y/n] / Enable MPD (Music Player Daemon) user service? [Y/n]: "
+read -r enable_mpd
+
+enable_mpd=${enable_mpd:-Y}
+
+if [[ $enable_mpd =~ ^[Yy]$ ]]; then
+  echo "启用 MPD 用户服务… / Enabling MPD user service…"
+  systemctl --user enable --now mpd.service
+  echo "✓ MPD 用户服务已启用 / MPD user service enabled"
+else
+  echo "跳过 MPD 服务启用 / Skipping MPD service enablement"
+fi
+
+# 询问是否启用 Syncthing 服务
+echo -n "是否启用 Syncthing (文件同步) 用户服务？[Y/n] / Enable Syncthing (file synchronization) user service? [Y/n]: "
+read -r enable_syncthing
+
+enable_syncthing=${enable_syncthing:-Y}
+
+if [[ $enable_syncthing =~ ^[Yy]$ ]]; then
+  echo "启用 Syncthing 用户服务… / Enabling Syncthing user service…"
+  systemctl --user enable --now syncthing.service
+  echo "✓ Syncthing 用户服务已启用 / Syncthing user service enabled"
+  echo "  访问 http://127.0.0.1:8384 进行配置 / Access http://127.0.0.1:8384 for configuration"
+else
+  echo "跳过 Syncthing 服务启用 / Skipping Syncthing service enablement"
+fi
+
 echo "✓ 常用软件安装完成 / Common software installation completed"
+
 ```
 
 ### 9.6 使用方法

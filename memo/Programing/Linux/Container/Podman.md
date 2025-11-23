@@ -117,20 +117,7 @@ Podman 提供了 `podman-docker` 包，以便可以使用 Docker CLI 命令与 P
 
 ```bash
 sudo pacman -S podman-docker
-```
-
-### 4.2 使用 Docker 命令
-
-创建符号链接，将 Docker 命令映射到 Podman：
-
-```bash
-sudo ln -s /usr/bin/podman /usr/bin/docker
-```
-
-你现在可以使用 Docker 命令（如 `docker run`）来操作 Podman：
-
-```bash
-docker run -it alpine sh
+# sudo touch /etc/containers/nodocker
 ```
 
 ## 5 高级功能
