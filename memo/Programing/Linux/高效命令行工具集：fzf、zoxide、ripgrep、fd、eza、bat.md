@@ -10,9 +10,7 @@ sudo pacman -S fzf zoxide ripgrep fd eza bat
 
 ## 2 Fzf - 模糊查找器
 
-> 仓库地址： https://github.com/junegunn/fzf
->
-> fzf 是一个通用的命令行模糊查找器，可以用于文件、历史命令、进程等的交互式筛选。
+> [fzf](https://github.com/junegunn/fzf) 是一个通用的命令行模糊查找器，可以用于文件、历史命令、进程等的交互式筛选。
 
 ### 2.1 Shell 集成配置
 
@@ -54,9 +52,7 @@ fzf --preview 'bat --color=always {}'
 
 ## 3 Zoxide - 智能目录跳转
 
-> 仓库地址： https://github.com/ajeetdsouza/zoxide
->
-> zoxide 是一个更快的 `cd` 命令替代品，它会学习你的使用习惯。
+> [zoxide](https://github.com/ajeetdsouza/zoxide) 是一个更快的 `cd` 命令替代品，它会学习你的使用习惯。
 
 ### 3.1 Shell 集成配置
 
@@ -102,9 +98,7 @@ eval "$(zoxide init zsh)"
 
 ## 4 Ripgrep - 更快的代码搜索
 
-> 仓库地址： https://github.com/BurntSushi/ripgrep
->
-> ripgrep (rg) 是一个递归式的行搜索工具，比 grep 更快更友好。
+> [ripgrep (rg)](https://github.com/BurntSushi/ripgrep ) 是一个递归式的行搜索工具，比 grep 更快更友好。
 
 ### 4.1 核心特性与基本使用
 
@@ -159,9 +153,7 @@ rg -l "模式"
 
 ## 5 Fd - 简单的文件查找
 
-> 仓库地址： https://github.com/sharkdp/fd
->
-> fd 是 `find` 命令的简单、快速、用户友好的替代品。
+> [fd](https://github.com/sharkdp/fd) 是 `find` 命令的简单、快速、用户友好的替代品。
 
 ### 5.1 基本使用
 
@@ -211,9 +203,7 @@ fd -t d -e  # 空目录
 
 ## 6 Eza - 现代化的 Ls 替代品
 
-> 仓库地址： https://github.com/eza-community/eza
->
-> eza 是 `ls` 命令的现代化替代品，提供更好的默认值和更多功能。
+> [eza](https://github.com/eza-community/eza) 是 `ls` 命令的现代化替代品，提供更好的默认值和更多功能。
 
 ### 6.1 实用别名配置
 
@@ -285,9 +275,7 @@ alias lta="eza -Ta --git-ignore"
 
 ## 7 Bat - 带语法高亮的 Cat
 
-> 仓库地址： https://github.com/sharkdp/bat
->
-> bat 是 `cat` 命令的替代品，支持语法高亮、Git 集成等。
+> [bat](https://github.com/sharkdp/bat ) 是 `cat` 命令的替代品，支持语法高亮、Git 集成等。
 
 ### 7.1 基本配置
 
