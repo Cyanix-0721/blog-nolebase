@@ -109,13 +109,13 @@ sudo pacman -S fcitx5-im fcitx5-rime fcitx5-chinese-addons rime-wanxiang-pinyin
 ### 8.1 通过 Pacman 安装
 
 ```bash
-sudo pacman -S fzf zoxide ripgrep fd eza bat obsidian keepassxc thunderbird thunderbird-i18n-zh-cn mpv yazi 7zip ffmpeg neovim lazygit gitui github-cli btop fastfetch dex poppler resvg imagemagick jq podman podman-compose uv libreoffice-fresh libreoffice-fresh-zh-cn gimp stow ast-grep git-delta dolphin nautilus mako fuzzel scrcpy syncthing ntfs-3g luarocks python-pynvim viu mpd rmpc kdenlive player
+sudo pacman -S fzf zoxide ripgrep fd eza bat obsidian keepassxc thunderbird thunderbird-i18n-zh-cn mpv yazi 7zip ffmpeg neovim lazygit gitui github-cli btop fastfetch dex poppler resvg imagemagick jq podman podman-compose uv libreoffice-fresh libreoffice-fresh-zh-cn gimp stow ast-grep git-delta dolphin nautilus mako fuzzel scrcpy syncthing ntfs-3g luarocks python-pynvim viu mpd rmpc mpd-mpris kdenlive player qt6ct cava polkit-kde-agent xdg-desktop-portal xdg-desktop-portal-gtk nwg-look cliphist wl-clipboard
 ```
 
 ### 8.2 通过 AUR 安装
 
 ```bash
-paru -S localsend-bin clash-verge-rev-bin zen-browser-bin ungoogled-chromium-bin bibata-cursor-theme-bin qt6ct octopi vesktop-bin ayugram-desktop
+paru -S localsend-bin clash-verge-rev-bin zen-browser-bin ungoogled-chromium-bin bibata-cursor-theme-bin octopi vesktop-bin ayugram-desktop noctalia-shell
 ```
 
 ## 9 一键安装脚本
@@ -623,15 +623,14 @@ sudo pacman -S --noconfirm neovim python-pynvim lazygit gitui github-cli uv ast-
 paru -S --noconfirm visual-studio-code-bin
 
 echo "安装系统工具… / Installing system tools…"
-sudo pacman -S --noconfirm mako fuzzel ntfs-3g niri isd xwayland-satellite playerctl
-paru -S --noconfirm octopi dms-shell-bin
+sudo pacman -S --noconfirm mako fuzzel ntfs-3g niri isd qt6ct xwayland-satellite playerctl polkit-kde-agent xdg-desktop-portal xdg-desktop-portal-gtk nwg-look cliphist wl-clipboard
 
 echo "安装网络工具… / Installing network tools…"
 paru -S --noconfirm clash-verge-rev-bin
 
 echo "安装日常应用… / Installing daily applications…"
-sudo pacman -S --noconfirm obsidian keepassxc thunderbird thunderbird-i18n-zh-cn libreoffice-fresh libreoffice-fresh-zh-cn mpv ffmpeg gimp yazi 7zip dolphin nautilus scrcpy syncthing mpd rmpc kdenlive
-paru -S --noconfirm zen-browser-bin ungoogled-chromium-bin localsend-bin bibata-cursor-theme-bin qt6ct-kde vesktop-bin ayugram-desktop
+sudo pacman -S --noconfirm obsidian keepassxc thunderbird thunderbird-i18n-zh-cn libreoffice-fresh libreoffice-fresh-zh-cn mpv ffmpeg gimp yazi 7zip dolphin nautilus scrcpy syncthing mpd mpd-mpris rmpc kdenlive cava
+paru -S --noconfirm zen-browser-bin ungoogled-chromium-bin localsend-bin bibata-cursor-theme-bin vesktop-bin ayugram-desktop
 
 # 询问是否安装 Podman
 echo -n "是否安装 Podman 和 podman-compose？[Y/n] / Install Podman and podman-compose? [Y/n]: "
@@ -720,6 +719,7 @@ enable_mpd=${enable_mpd:-Y}
 if [[ $enable_mpd =~ ^[Yy]$ ]]; then
   echo "启用 MPD 用户服务… / Enabling MPD user service…"
   systemctl --user enable --now mpd.service
+  systemctl --user enable --now mpd-mpris.service
   echo "✓ MPD 用户服务已启用 / MPD user service enabled"
 else
   echo "跳过 MPD 服务启用 / Skipping MPD service enablement"

@@ -42,34 +42,15 @@ modify or create `~/.config/fontconfig/fonts.conf`
 <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
 <fontconfig>
 
-    <!-- 缩放设置 (适用于125%缩放) -->
     <match target="font">
-        <edit name="dpi" mode="assign">
-            <double>120</double>
-        </edit>
-        <edit name="antialias" mode="assign">
-            <bool>true</bool>
-        </edit>
-        <edit name="hinting" mode="assign">
-            <bool>true</bool>
-        </edit>
-        <edit name="hintstyle" mode="assign">
-            <const>hintslight</const>
-        </edit>
-        <edit name="rgba" mode="assign">
-            <const>rgb</const>
-        </edit>
-        <edit name="lcdfilter" mode="assign">
-            <const>lcddefault</const>
-        </edit>
+        <edit name="rgba" mode="assign"><const>none</const></edit>
     </match>
 
-    <!-- 默认字体设置 - 只使用您安装的字体 -->
     <alias>
         <family>sans-serif</family>
         <prefer>
-            <family>JetBrainsMono Nerd Font</family> <!-- 英文优先 -->
-            <family>Sarasa Gothic</family> <!-- 中文优先 -->
+            <family>JetBrainsMono Nerd Font</family>
+            <family>Sarasa Gothic</family>
             <family>Source Han Sans CN</family>
             <family>Noto Sans CJK SC</family>
             <family>WenQuanYi Micro Hei</family>
@@ -90,45 +71,32 @@ modify or create `~/.config/fontconfig/fonts.conf`
     <alias>
         <family>monospace</family>
         <prefer>
-            <family>JetBrainsMono Nerd Font</family> <!-- 英文优先 -->
-            <family>Sarasa Gothic</family> <!-- 中文优先 -->
+            <family>JetBrainsMono Nerd Font</family>
+            <family>Sarasa Gothic</family>
             <family>Noto Sans Mono CJK SC</family>
             <family>Noto Color Emoji</family>
         </prefer>
     </alias>
 
-    <!-- 中文字体优先使用更纱黑体 -->
     <match>
-        <test name="lang" compare="contains">
-            <string>zh</string>
-        </test>
-        <test name="family">
-            <string>sans-serif</string>
-        </test>
+        <test name="lang" compare="contains"><string>zh</string></test>
         <edit name="family" mode="prepend">
             <string>Sarasa Gothic</string>
             <string>Source Han Sans CN</string>
         </edit>
     </match>
 
-    <!-- 英文字体优先使用JetBrains Mono -->
     <match>
-        <test name="lang" compare="contains">
-            <string>en</string>
-        </test>
+        <test name="lang" compare="contains"><string>en</string></test>
         <edit name="family" mode="prepend">
             <string>JetBrainsMono Nerd Font</string>
-            <string>Sarasa Gothic</string>
         </edit>
     </match>
 
-    <!-- 禁止使用位图字体 -->
     <selectfont>
         <rejectfont>
             <pattern>
-                <patelt name="scalable">
-                    <bool>false</bool>
-                </patelt>
+                <patelt name="scalable"><bool>false</bool></patelt>
             </pattern>
         </rejectfont>
     </selectfont>
@@ -186,7 +154,7 @@ sudo pacman -S fcitx5-im fcitx5-rime fcitx5-chinese-addons
 
 3. **重新登录系统**以使配置生效。
 
-## 1 Configure
+## 3 Configure
 
 [fcitx5](https://archlinux.org/packages/?name=fcitx5) 包的配置文件位于 `~/.config/fcitx5`，尽管您可以使用文本编辑器编辑配置文件，但是使用 GUI 配置显然更方便。安装 [fcitx5-configtool](https://archlinux.org/packages/?name=fcitx5-configtool) <sup>包</sup> 软件包。**(Include in fcitx5-im)**
 
